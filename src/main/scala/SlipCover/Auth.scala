@@ -1,6 +1,7 @@
 package com.roundeights.foldout
 
 import org.apache.commons.codec.binary.Base64
+import scala.language.reflectiveCalls
 
 /**
  * CouchDB companion
