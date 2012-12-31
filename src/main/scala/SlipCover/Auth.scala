@@ -4,7 +4,7 @@ import org.apache.commons.codec.binary.Base64
 import scala.language.reflectiveCalls
 
 /**
- * CouchDB companion
+ * Authentication credentials
  */
 case class Auth (
     val username: String,
