@@ -15,6 +15,7 @@ resolvers ++= Seq(
 // Application dependencies
 libraryDependencies ++= Seq(
     "com.ning" % "async-http-client" % "1.7.9",
+    "org.slf4j" % "slf4j-simple" % "1.7.2",
     "commons-codec" % "commons-codec" % "1.7",
     "org.specs2" %% "specs2" % "1.12.3" % "test"
 )
