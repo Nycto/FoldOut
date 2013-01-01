@@ -12,7 +12,7 @@ case class Auth (
 ) {
 
     /** Returns the auth data as a basic auth http header value */
-    def basicAuth: String = "Basic " + Base64.encodeBase64String(
+    lazy val basicAuth: String = "Basic " + Base64.encodeBase64String(
         "%s:%s".format( username, password ).getBytes("UTF-8")
     )
 
