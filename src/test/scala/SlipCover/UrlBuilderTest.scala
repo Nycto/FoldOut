@@ -49,6 +49,20 @@ class UrlBuilderTest extends Specification {
                 .must_==( "https://localhost:8080/path" )
         }
 
+        "Prepend a root path when it is provided" in {
+            new UrlBuilder("local", 8080, true, Some("root")).url("path")
+                .must_==( "https://local:8080/root/path" )
+
+            new UrlBuilder("local", 8080, true, Some("/root/")).url("/path")
+                .must_==( "https://local:8080/root/path" )
+
+            new UrlBuilder("local", 8080, true)
+                .withBasePath("one")
+                .withBasePath("/two/")
+                .url("/three")
+                .must_==( "https://local:8080/one/two/three" )
+        }
+
     }
 
 }

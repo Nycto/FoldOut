@@ -33,15 +33,29 @@ private[foldout] object UrlBuilder {
 private[foldout] class UrlBuilder (
     private val host: String,
     private val port: Int,
-    private val ssl: Boolean = false
+    private val ssl: Boolean = false,
+    basePath: Option[String] = None
 ) {
+
+    /** The base path to attach to each request */
+    private val rootPath = basePath.map {
+        "/" + _.dropWhile( _ == '/' ).reverse.dropWhile( _ == '/' ).reverse
+    }
+
+    /** Returns the path to use for making a request */
+    def buildPath ( path: String ): String
+        = rootPath.getOrElse("") + "/" + path.dropWhile( _ == '/' )
+
+    /** Builds a new UrlBuilder with the given base path added */
+    def withBasePath( basePath: String )
+        = new UrlBuilder( host, port, ssl, Some( buildPath(basePath) ) )
 
     /** Generates a URL with the given path and query parameters */
     def url ( path: String, query: List[(_, _)] ): String = {
         val url = new URL(
             if ( ssl ) "https" else "http",
             host, port,
-            if ( path.startsWith("/") ) path else "/" + path
+            buildPath( path )
         )
 
         if ( query.length != 0 )
