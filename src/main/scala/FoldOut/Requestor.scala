@@ -35,6 +35,10 @@ private[foldout] class Requestor (
         )
     )
 
+    /** Constructs a new Requestor that adds a base path to requests */
+    def withBasePath( basePath: String ): Requestor
+        = new Requestor( url.withBasePath(basePath), auth, client )
+
     /** Sends a message to close the connection down */
     def close: Unit = client.close
 

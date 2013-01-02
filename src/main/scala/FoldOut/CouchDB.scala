@@ -74,6 +74,10 @@ class CouchDB (
         }
     }
 
+    /** Returns the given database */
+    def db ( database: String )
+        = new Database( requestor.withBasePath(database) )
+
 }
 
 
