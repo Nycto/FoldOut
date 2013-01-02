@@ -1,6 +1,9 @@
 package com.roundeights.foldout
 
+import com.roundeights.scalon.nElement
+
 import scala.concurrent.Future
+import scala.concurrent.ExecutionContext.Implicits.global
 
 /**
  * CouchDB companion
@@ -55,12 +58,14 @@ class CouchDB (
     def close: Unit = requestor.close
 
     /** Returns the document with the given key */
-    def get ( key: String, params: Map[String, String] ): Future[Option[Doc]]
-        = requestor.get( key, params )
+    def get (
+        key: String, params: Map[String, String]
+    ): Future[Option[nElement]] = requestor.get( key, params )
 
     /** Returns the document with the given key */
-    def get ( key: String, params: (String, String)* ): Future[Option[Doc]]
-        = get( key, Map(params: _*) )
+    def get (
+        key: String, params: (String, String)*
+    ): Future[Option[nElement]] = get( key, Map(params: _*) )
 
 }
 

@@ -1,5 +1,7 @@
 package com.roundeights.foldout
 
+import com.roundeights.scalon.{nElement, nParser}
+
 import scala.concurrent.Promise
 import scala.util.Try
 
@@ -12,7 +14,7 @@ import com.ning.http.client.AsyncHandler.STATE
  * receied.
  */
 private[foldout] class Asynchronizer (
-    private val promise: Promise[Option[Doc]]
+    private val promise: Promise[Option[nElement]]
 ) extends AsyncHandler[Unit] {
 
     /** Collects the body of the request as it is received */
@@ -52,7 +54,7 @@ private[foldout] class Asynchronizer (
 
     /** {@inheritDoc} */
     override def onCompleted(): Unit = promise.complete( Try {
-        Some(Doc(body.toString))
+        Some( nParser.json(body.toString) )
     } )
 
 }

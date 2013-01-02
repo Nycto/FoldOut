@@ -1,6 +1,9 @@
 package com.roundeights.foldout
 
+import com.roundeights.scalon.nElement
+
 import scala.concurrent.{Promise, Future}
+import scala.concurrent.ExecutionContext.Implicits.global
 
 import com.ning.http.client.{
     AsyncHttpClientConfig, AsyncHttpClient, RequestBuilder
@@ -49,17 +52,18 @@ private[foldout] class Requestor (
     }
 
     /** Executes the given request and returns a promise */
-    def execute ( request: RequestBuilder ): Future[Option[Doc]] = {
-        val promise = Promise[Option[Doc]]()
+    def execute ( request: RequestBuilder ): Future[Option[nElement]] = {
+        val promise = Promise[Option[nElement]]()
         client.executeRequest( request.build(), new Asynchronizer( promise ) );
         promise.future
     }
 
     /** Returns the document with the given key */
-    def get ( key: String, params: Map[String, String] ): Future[Option[Doc]]
+    def get (
+        key: String, params: Map[String, String] = Map()
+    ): Future[Option[nElement]]
         = execute( buildRequest("GET", key, params) )
 
 }
-
 
 
