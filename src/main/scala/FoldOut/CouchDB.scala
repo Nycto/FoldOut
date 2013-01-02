@@ -67,6 +67,13 @@ class CouchDB (
         key: String, params: (String, String)*
     ): Future[Option[nElement]] = get( key, Map(params: _*) )
 
+    /** Returns a the list of databases */
+    def allDBs: Future[Set[String]] = requestor.get("_all_dbs").map {
+        (opt: Option[nElement]) => opt.get.asArray.foldLeft( Set[String]() ) {
+            (accum, elem) => accum + elem.asString
+        }
+    }
+
 }
 
 
