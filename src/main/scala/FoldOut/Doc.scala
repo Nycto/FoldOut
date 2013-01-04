@@ -74,5 +74,8 @@ class RowList ( doc: nObject ) extends Iterable[Doc] {
         override def next = Doc( entries.next.asObject )
     }
 
+    /** {@inheritDoc} */
+    override def toString = "RowList(%s)".format( rows.toString )
+
 }
 
