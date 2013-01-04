@@ -11,19 +11,13 @@ import scala.concurrent.ExecutionContext.Implicits.global
 class Database private[foldout] ( private val requestor: Requestor ) {
 
     /** Returns the document with the given key */
-    def get (
-        key: String, params: Map[String, String]
-    ): Future[Option[Doc]] = {
-        requestor.get( key, params ).map {
+    def get ( key: String ): Future[Option[Doc]] = {
+        requestor.get( key ).map {
             (opt: Option[nElement]) => opt.map {
                 elem => Doc( elem.asObject )
             }
         }
     }
-
-    /** Returns the document with the given key */
-    def get ( key: String, params: (String, String)* ): Future[Option[Doc]]
-        = get( key, Map(params: _*) )
 
 }
 
