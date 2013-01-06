@@ -19,6 +19,9 @@ class Database private[foldout] ( private val requestor: Requestor ) {
         }
     }
 
+    /** Returns all the documents in a database */
+    def allDocs: BulkRead = new BulkRead( requestor, "_all_docs" )
+
 }
 
 
