@@ -17,6 +17,7 @@ libraryDependencies ++= Seq(
     "com.ning" % "async-http-client" % "1.7.9",
     "org.slf4j" % "slf4j-simple" % "1.7.2",
     "commons-codec" % "commons-codec" % "1.7",
-    "org.specs2" %% "specs2" % "1.12.3" % "test"
+    "org.specs2" %% "specs2" % "1.12.3" % "test",
+    "org.mockito" % "mockito-all" % "1.9.5-rc1" % "test"
 )
 
