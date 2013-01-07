@@ -14,9 +14,9 @@ class Row private[foldout] (
 
     /** Constructs a row from a notation element */
     private[foldout] def this ( elem: nElement ) = this(
-        elem.asObject.str("id").get,
-        elem.asObject.get("key").get,
-        elem.asObject.obj("value").get
+        elem.asObject.str("id").getOrElse( throw MissingKey("id") ),
+        elem.asObject.get("key").getOrElse( throw MissingKey("key") ),
+        elem.asObject.obj("value").getOrElse( throw MissingKey("value") )
     )
 
     /** {@inheritDoc} */
@@ -37,9 +37,12 @@ object RowList {
 
     /** Creates a new document from a JSON object */
     def apply ( elem: nElement ): RowList = apply(
-        elem.asObject.int("total_rows").get.toInt,
-        elem.asObject.int("offset").get.toInt,
-        elem.asObject.ary("rows").get
+        elem.asObject.int("total_rows")
+            .getOrElse( throw MissingKey("total_rows") ).toInt,
+        elem.asObject.int("offset")
+            .getOrElse( throw MissingKey("total_rows") ).toInt,
+        elem.asObject.ary("rows")
+            .getOrElse( throw MissingKey("rows") )
     )
 
     /** Creates a new document from a JSON string */

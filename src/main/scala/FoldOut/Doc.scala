@@ -37,10 +37,10 @@ class Doc ( val obj: nObject ) extends nObject.Interface[Doc] {
     override def toMap: Map[String, nElement] = obj.toMap
 
     /** Returns the ID from this document */
-    def id: String  = obj.str("_id").get
+    def id: String  = obj.str("_id").getOrElse( throw MissingKey.id )
 
     /** Returns the revision of this document */
-    def rev: String  = obj.str("_rev").get
+    def rev: String  = obj.str("_rev").getOrElse( throw MissingKey.rev )
 
 }
 
