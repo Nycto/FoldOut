@@ -2,6 +2,28 @@ package com.roundeights.foldout
 
 import com.roundeights.scalon.{nObject, nElement, nParser}
 
+
+/**
+ * A Row from a bulk read
+ */
+class Row private[foldout] (
+    val id: String, val key: nElement, obj: nObject
+) extends Doc(obj) {
+
+    /** Constructs a row from a notation element */
+    private[foldout] def this ( elem: nElement ) = this(
+        elem.asObject.str("id").get,
+        elem.asObject.get("key").get,
+        elem.asObject.obj("value").get
+    )
+
+    /** {@inheritDoc} */
+    override def toString: String
+        = "Row(%s, %s, %s)".format(id, key.toString, obj.toString)
+
+}
+
+
 /**
  * RowList Companion
  */
@@ -29,19 +51,19 @@ class RowList private[foldout](
     val totalRows: Int,
     val offset: Int,
     private val rows: Seq[nElement]
-) extends Seq[Doc] with Equals {
+) extends Seq[Row] with Equals {
 
     /** {@inheritDoc} */
-    override def apply ( idx: Int ): Doc = Doc( rows.apply(idx).asObject )
+    override def apply ( idx: Int ): Row = new Row( rows.apply(idx) )
 
     /** {@inheritDoc} */
     override def length: Int = rows.length
 
     /** {@inheritDoc} */
-    override def iterator: Iterator[Doc] = new Iterator[Doc] {
+    override def iterator: Iterator[Row] = new Iterator[Row] {
         private val entries = rows.iterator
         override def hasNext = entries.hasNext
-        override def next = Doc( entries.next.asObject )
+        override def next = new Row(entries.next)
     }
 
     /** {@inheritDoc} */

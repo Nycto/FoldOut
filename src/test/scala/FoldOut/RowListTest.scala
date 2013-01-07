@@ -33,12 +33,13 @@ class RowListTest extends Specification {
 
         "Iterate over the rows" in {
             val list = RowList("""{ "total_rows": 3, "offset": 0, "rows": [
-                { "key": 1 }, { "key": 2 }, { "key": 3 }
+                { "id": "1", "key": "2", "value": {} },
+                { "id": "3", "key": "4", "value": {} }
             ] }""")
 
-            list.foldRight( List[Int]() ) {
-                (obj, accum) => obj.int("key").get.toInt :: accum
-            } must_== List(1, 2, 3)
+            list.foldRight( List[String]() ) {
+                (obj, accum) => obj.toString :: accum
+            } must_== List( """Row(1, 2, {})""", """Row(3, 4, {})""" )
         }
 
         "Provide equality comparisons" in {
