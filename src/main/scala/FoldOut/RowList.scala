@@ -7,7 +7,9 @@ import com.roundeights.scalon.{nObject, nElement, nParser}
  * A Row from a bulk read
  */
 class Row private[foldout] (
-    val id: String, val key: nElement, obj: nObject
+    override val id: String,
+    val key: nElement,
+    obj: nObject
 ) extends Doc(obj) {
 
     /** Constructs a row from a notation element */

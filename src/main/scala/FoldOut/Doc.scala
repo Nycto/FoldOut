@@ -36,5 +36,11 @@ class Doc ( val obj: nObject ) extends nObject.Interface[Doc] {
     /** {@inheritDoc} */
     override def toMap: Map[String, nElement] = obj.toMap
 
+    /** Returns the ID from this document */
+    def id: String  = obj.str("_id").get
+
+    /** Returns the revision of this document */
+    def rev: String  = obj.str("_rev").get
+
 }
 
