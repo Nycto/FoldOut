@@ -22,7 +22,14 @@ class Database private[foldout] ( private val requestor: Requestor ) {
     /** Returns all the documents in a database */
     def allDocs: BulkRead = new BulkRead( requestor, "_all_docs" )
 
-}
+    /** Returns access to the given design */
+    def design ( name: String ): Design
+        = new Design( requestor.withBasePath( "_design/%s".format(name) ) )
 
+    /** Returns the given view */
+    def view ( designName: String, viewName: String ): BulkRead
+        = design( designName ).view( viewName )
+
+}
 
 
