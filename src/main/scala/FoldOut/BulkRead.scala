@@ -27,6 +27,7 @@ private[foldout] object Params extends Enumeration {
     val Skip = Value("skip")
     val Reduce = Value("reduce")
     val InclusiveEnd = Value("inclusive_end")
+    val IncludeDocs = Value("include_docs")
 
     /** Returns a list of keys that can not be set when the given key is set */
     def precludes ( param: Param ) = param match {
@@ -150,6 +151,13 @@ class BulkRead private[foldout] (
 
     /** Marks that the final key should be included when a range is specified */
     def includeEnd: BulkRead = includeEnd( true )
+
+    /** Marks that full documents should be included as part of the results */
+    def includeDocs ( include: Boolean ): BulkRead
+        = withParam( IncludeDocs, nBool(include) )
+
+    /** Marks that full documents should be included as part of the results */
+    def includeDocs: BulkRead = includeDocs( true )
 
 }
 

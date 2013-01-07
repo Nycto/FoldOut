@@ -42,14 +42,14 @@ class BulkReadTest extends Specification with Mockito {
             val request = mockRequestor()
             val read = new BulkRead(request, "path")
                 .key("abc123").limit(10).skip(2).desc
-                .staleOk.reduce.includeEnd
+                .staleOk.reduce.includeEnd.includeDocs
 
             exec( read ) must_== expected
 
             there was one(request).get("path", Map(
                 "key" -> "\"abc123\"", "limit" -> "10", "skip" -> "2",
                 "descending" -> "true", "stale" -> "ok", "reduce" -> "true",
-                "inclusive_end" -> "true"
+                "inclusive_end" -> "true", "include_docs" -> "true"
             ))
         }
 
@@ -57,14 +57,16 @@ class BulkReadTest extends Specification with Mockito {
             val request = mockRequestor()
             val read = new BulkRead(request, "path")
                 .keys("abc123", "xyz789").asc
-                .staleOk( true ).reduce( false ).includeEnd( false )
+                .staleOk( true ).reduce( false )
+                .includeEnd( false ).includeDocs( false )
 
             exec( read ) must_== expected
 
             there was one(request).get("path", Map(
                 "keys" -> """["abc123","xyz789"]""",
                 "descending" -> "false", "stale" -> "update_after",
-                "reduce" -> "false", "inclusive_end" -> "false"
+                "reduce" -> "false", "inclusive_end" -> "false",
+                "include_docs" -> "false"
             ))
         }
 
