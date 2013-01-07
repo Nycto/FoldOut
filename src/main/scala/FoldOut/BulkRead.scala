@@ -85,10 +85,24 @@ class BulkRead private[foldout] (
     )
 
     /** Defines the key at which the results should start */
-    def startKey ( id: String ): BulkRead = withParam(StartKey, nString(id))
+    def startKey ( key: nElement ): BulkRead = withParam(StartKey, key)
 
     /** Defines the key at which the results should end */
-    def endKey ( id: String ): BulkRead = withParam(EndKey, nString(id))
+    def endKey ( key: nElement ): BulkRead = withParam(EndKey, key)
+
+    /** Defines the key at which the results should start */
+    def startKey ( key: String ): BulkRead = startKey(nString(key))
+
+    /** Defines the key at which the results should end */
+    def endKey ( key: String ): BulkRead = endKey(nString(key))
+
+    /** Defines the key at which the results should start */
+    def startKey ( key: Seq[String] ): BulkRead
+        = startKey( nList(key.map { nString(_) }) )
+
+    /** Defines the key at which the results should end */
+    def endKey ( key: Seq[String] ): BulkRead
+        = endKey( nList(key.map { nString(_) }) )
 
     /** Defines a range of keys to select */
     def range ( start: String, end: String ): BulkRead
@@ -96,6 +110,10 @@ class BulkRead private[foldout] (
 
     /** Defines a range of keys to select */
     def range ( ids: (String, String) ): BulkRead = range( ids._1, ids._2 )
+
+    /** Defines a range of keys to select */
+    def range ( start: Seq[String], end: Seq[String] ): BulkRead
+        = startKey(start).endKey(end)
 
     /** Defines document ID at which the results should start */
     def startDocID ( id: String ): BulkRead = withParam(StartDocID, nString(id))
