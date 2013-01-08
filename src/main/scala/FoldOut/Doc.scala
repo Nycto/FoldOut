@@ -31,16 +31,16 @@ class Doc ( val obj: nObject ) extends nObject.Interface[Doc] {
     override def iterator: Iterator[(String, nElement)] = obj.iterator
 
     /** {@inheritDoc} */
-    override def get( key: String ): Option[nElement] = obj.get( key )
+    override def get_?( key: String ): Option[nElement] = obj.get_?( key )
 
     /** {@inheritDoc} */
     override def toMap: Map[String, nElement] = obj.toMap
 
     /** Returns the ID from this document */
-    def id: String  = obj.str("_id").getOrElse( throw MissingKey.id )
+    def id: String  = obj.str("_id")
 
     /** Returns the revision of this document */
-    def rev: String  = obj.str("_rev").getOrElse( throw MissingKey.rev )
+    def rev: String  = obj.str("_rev")
 
 }
 

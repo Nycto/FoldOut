@@ -80,9 +80,7 @@ class BulkRead private[foldout] (
     def key ( id: String ): BulkRead = withParam(Key, nString(id))
 
     /** Defines a list of keys to return */
-    def keys ( ids: String* ): BulkRead = withParam(
-       Keys, nList( ids.foldRight( List[nString]() ){ nString(_) :: _ } )
-    )
+    def keys ( ids: String* ): BulkRead = withParam( Keys, nList( ids:_* ) )
 
     /** Defines the key at which the results should start */
     def startKey ( key: nElement ): BulkRead = withParam(StartKey, key)
@@ -98,11 +96,11 @@ class BulkRead private[foldout] (
 
     /** Defines the key at which the results should start */
     def startKey ( key: Seq[String] ): BulkRead
-        = startKey( nList(key.map { nString(_) }) )
+        = startKey( nList(key:_*) )
 
     /** Defines the key at which the results should end */
     def endKey ( key: Seq[String] ): BulkRead
-        = endKey( nList(key.map { nString(_) }) )
+        = endKey( nList(key:_*) )
 
     /** Defines a range of keys to select */
     def range ( start: String, end: String ): BulkRead
