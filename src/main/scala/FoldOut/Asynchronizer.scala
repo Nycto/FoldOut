@@ -39,7 +39,10 @@ private[foldout] class Asynchronizer (
             promise.success( None )
             STATE.ABORT
         }
-        else if ( responseStatus.getStatusCode != 200 ) {
+        else if (
+            responseStatus.getStatusCode >= 300
+            || responseStatus.getStatusCode < 200
+        ) {
             promise.failure( new RequestError(responseStatus) )
             STATE.ABORT
         }

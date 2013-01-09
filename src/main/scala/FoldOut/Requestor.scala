@@ -52,6 +52,10 @@ private[foldout] class Requestor (
     ): Future[Option[nElement]]
         = execute( builder.get(key, params) )
 
+    /** Returns the document with the given key */
+    def put( key: String, doc: nElement ): Future[Option[nElement]]
+        = execute( builder.put(key, doc) )
+
 }
 
 
