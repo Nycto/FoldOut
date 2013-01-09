@@ -56,6 +56,10 @@ private[foldout] class Requestor (
     def put( key: String, doc: nElement ): Future[Option[nElement]]
         = execute( builder.put(key, doc) )
 
+    /** Returns the document with the given key */
+    def delete( key: String, revision: String ): Future[Option[nElement]]
+        = execute( builder.delete(key, revision) )
+
 }
 
 

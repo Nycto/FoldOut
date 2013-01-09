@@ -20,15 +20,15 @@ class Database private[foldout] ( private val requestor: Requestor ) {
     }
 
     /** Puts the given document */
-    def put ( doc: Doc ): Future[Updated] = {
-        requestor.put( doc.id, doc.obj ).map {
-            opt => new Updated(
-                opt.getOrElse( throw new RequestError(
-                    "PUT request did not return a valid response"
-                ))
-            )
-        }
-    }
+    def put ( doc: Doc ): Future[Updated]
+        = Updated( requestor.put( doc.id, doc.obj ) )
+
+    /** Deletes the given key and revision*/
+    def delete ( key: String, revision: String ): Future[Updated]
+        = Updated( requestor.delete( key, revision ) )
+
+    /** Deletes the given document */
+    def delete ( doc: Doc ): Future[Updated] = delete( doc.id, doc.rev )
 
     /** Returns all the documents in a database */
     def allDocs: BulkRead = new BulkRead( requestor, "_all_docs" )
