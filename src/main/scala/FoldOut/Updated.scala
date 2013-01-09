@@ -26,11 +26,11 @@ object Updated {
 /**
  * The result of a PUT or POST request
  */
-case class Updated private[foldout] ( val rev: String ) {
+case class Updated private[foldout] ( val rev: String, val id: String ) {
 
     /** Builds a new instance from a notation document */
     private[foldout] def this ( doc: nElement )
-        = this( doc.asObject.str("rev") )
+        = this( doc.asObject.str("rev"), doc.asObject.str("id") )
 
 }
 

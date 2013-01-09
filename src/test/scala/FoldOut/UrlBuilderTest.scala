@@ -63,6 +63,16 @@ class UrlBuilderTest extends Specification {
                 .must_==( "https://local:8080/one/two/three" )
         }
 
+        "Generate URLs without a path" in {
+            new UrlBuilder("localhost", 8080).url( None, Map() )
+                .must_==( "http://localhost:8080/" )
+
+            new UrlBuilder("localhost", 8080)
+                .withBasePath("path")
+                .url( None, Map() )
+                .must_==( "http://localhost:8080/path/" )
+        }
+
     }
 
 }

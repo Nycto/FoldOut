@@ -30,6 +30,10 @@ class Database private[foldout] ( private val requestor: Requestor ) {
     /** Deletes the given document */
     def delete ( doc: Doc ): Future[Updated] = delete( doc.id, doc.rev )
 
+    /** Posts the given document */
+    def post ( doc: Doc ): Future[Updated]
+        = Updated( requestor.post(doc.obj) )
+
     /** Returns all the documents in a database */
     def allDocs: BulkRead = new BulkRead( requestor, "_all_docs" )
 

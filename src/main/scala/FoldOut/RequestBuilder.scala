@@ -18,14 +18,15 @@ private[foldout] class RequestBuilder (
         = new RequestBuilder( url.withBasePath(basePath), auth )
 
     /** Returns a prefilled request builder */
-    def build(
+    private def build(
         method: String,
-        key: String,
+        key: Option[String],
         params: Map[String, String] = Map(),
         body: Option[nElement] = None
     ): Request = {
         val builder = new AsyncRequestBuilder( method )
-            .setUrl( url.url(key, params) )
+            .setUrl( url.url( key, params) )
+            .addHeader( "Content-Type", "application/json;charset=utf-8" )
 
         // Add in the authorization header
         auth.foreach( _.addHeader( builder ) )
@@ -38,19 +39,19 @@ private[foldout] class RequestBuilder (
 
     /** Returns the document with the given key */
     def get ( key: String, params: Map[String, String] = Map() ): Request
-        = build("GET", key, params)
+        = build("GET", Some(key), params)
 
     /** Returns the document with the given key */
     def delete ( key: String, revision: String ): Request
-        = build("DELETE", key, Map("rev" -> revision))
+        = build("DELETE", Some(key), Map("rev" -> revision))
 
     /** Sends the given document using a PUT request */
     def put ( key: String, doc: nElement ): Request
-        = build("PUT", key, Map(), Some(doc))
+        = build("PUT", Some(key), Map(), Some(doc))
 
     /** Sends the given document using a PUT request */
-    def post ( key: String, doc: nElement ): Request
-        = build("POST", key, Map(), Some(doc))
+    def post ( doc: nElement ): Request
+        = build("POST", None, Map(), Some(doc))
 
 }
 

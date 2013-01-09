@@ -43,15 +43,17 @@ private[foldout] class UrlBuilder (
     }
 
     /** Returns the path to use for making a request */
-    def buildPath ( path: String ): String
-        = rootPath.getOrElse("") + "/" + path.dropWhile( _ == '/' )
+    def buildPath ( path: Option[String] ): String = "%s/%s".format(
+        rootPath.getOrElse(""),
+        path.getOrElse("").dropWhile( _ == '/' )
+    )
 
     /** Builds a new UrlBuilder with the given base path added */
     def withBasePath( basePath: String )
-        = new UrlBuilder( host, port, ssl, Some( buildPath(basePath) ) )
+        = new UrlBuilder( host, port, ssl, Some( buildPath(Some(basePath)) ) )
 
     /** Generates a URL with the given path and query parameters */
-    def url ( path: String, query: List[(_, _)] ): String = {
+    def url ( path: Option[String], query: List[(_, _)] ): String = {
         val url = new URL(
             if ( ssl ) "https" else "http",
             host, port,
@@ -65,12 +67,12 @@ private[foldout] class UrlBuilder (
     }
 
     /** Generates a URL with the given path and query parameters */
-    def url ( path: String, query: Map[_, _] ): String
+    def url ( path: Option[String], query: Map[_, _] ): String
         = url( path, query.toList )
 
     /** Generates a URL with the given path and query parameters */
     def url ( path: String, query: (_, _)* ): String
-        = url( path, query.toList )
+        = url( Some(path), query.toList )
 
 }
 
