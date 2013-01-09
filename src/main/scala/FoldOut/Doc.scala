@@ -45,5 +45,11 @@ class Doc ( val obj: nObject ) extends nObject.Interface[Doc] {
     /** Returns the revision of this document */
     def rev: String  = obj.str("_rev")
 
+    /** Requires that this document have a revision */
+    def requireRev: Doc = {
+        this.rev
+        this
+    }
+
 }
 
