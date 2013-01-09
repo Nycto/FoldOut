@@ -11,6 +11,9 @@ object Doc {
     /** Creates a new document from a JSON string */
     def apply ( json: String ): Doc = new Doc( nParser.jsonObj(json) )
 
+    /** Creates a new document from a list of tuples */
+    def apply ( values: (Any, Any)* ): Doc = new Doc( nObject(values:_*) )
+
 }
 
 /**
