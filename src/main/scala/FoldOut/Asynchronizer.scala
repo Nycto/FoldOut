@@ -39,6 +39,10 @@ private[foldout] class Asynchronizer (
             promise.success( None )
             STATE.ABORT
         }
+        else if ( responseStatus.getStatusCode == 409 ) {
+            promise.failure( new RevisionConflict )
+            STATE.ABORT
+        }
         else if (
             responseStatus.getStatusCode >= 300
             || responseStatus.getStatusCode < 200
