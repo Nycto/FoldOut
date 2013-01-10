@@ -20,19 +20,19 @@ class Database private[foldout] ( private val requestor: Requestor ) {
     }
 
     /** Puts the given document */
-    def put ( doc: Doc ): Future[Updated]
-        = Updated( requestor.put( doc.id, doc.obj ) )
+    def put ( doc: Doc ): Future[Written]
+        = Written( requestor.put( doc.id, doc.obj ) )
 
     /** Deletes the given key and revision*/
-    def delete ( key: String, revision: String ): Future[Updated]
-        = Updated( requestor.delete( key, revision ) )
+    def delete ( key: String, revision: String ): Future[Written]
+        = Written( requestor.delete( key, revision ) )
 
     /** Deletes the given document */
-    def delete ( doc: Doc ): Future[Updated] = delete( doc.id, doc.rev )
+    def delete ( doc: Doc ): Future[Written] = delete( doc.id, doc.rev )
 
     /** Posts the given document */
-    def post ( doc: Doc ): Future[Updated]
-        = Updated( requestor.post(doc.obj) )
+    def post ( doc: Doc ): Future[Written]
+        = Written( requestor.post(doc.obj) )
 
     /** Returns all the documents in a database */
     def allDocs: BulkRead = new BulkRead( requestor, "_all_docs" )

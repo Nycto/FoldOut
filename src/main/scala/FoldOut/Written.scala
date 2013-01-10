@@ -6,14 +6,14 @@ import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
 
 /**
- * Updated companion
+ * Written companion
  */
-object Updated {
+object Written {
 
     /** Builds a new instance from respose future */
     private[foldout] def apply ( result: Future[Option[nElement]] ) = {
         result.map { opt =>
-            new Updated(
+            new Written(
                 opt.getOrElse( throw new RequestError(
                     "Request did not return a valid response"
                 ))
@@ -26,7 +26,7 @@ object Updated {
 /**
  * The result of a PUT or POST request
  */
-case class Updated private[foldout] ( val rev: String, val id: String ) {
+case class Written private[foldout] ( val rev: String, val id: String ) {
 
     /** Builds a new instance from a notation document */
     private[foldout] def this ( doc: nElement )
