@@ -1,8 +1,10 @@
 name := "FoldOut"
 
-scalaVersion := "2.10.0"
+organization := "com.roundeights"
 
 version := "0.1"
+
+scalaVersion := "2.10.0"
 
 // Compiler flags
 scalacOptions ++= Seq("-deprecation", "-feature")
