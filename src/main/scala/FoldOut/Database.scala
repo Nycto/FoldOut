@@ -6,6 +6,24 @@ import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
 
 /**
+ * A trait for objects that can convert themselves to a document
+ */
+trait Documentable {
+
+    /** Returns this object as a document */
+    def toDoc: Doc
+}
+
+/**
+ * A trait for objects that can convert themselves to a document key
+ */
+trait Keyable {
+
+    /** Returns this object as a document */
+    def toDocKey: String
+}
+
+/**
  * A CouchDB database
  */
 class Database private[foldout] ( private val requestor: Requestor ) {
@@ -19,9 +37,15 @@ class Database private[foldout] ( private val requestor: Requestor ) {
         }
     }
 
+    /** Returns the document with the given key */
+    def get ( key: Keyable ): Future[Option[Doc]] = get( key.toDocKey )
+
     /** Puts the given document */
     def put ( doc: Doc ): Future[Written]
         = Written( requestor.put( doc.id, doc.obj ) )
+
+    /** Puts the given document */
+    def put ( doc: Documentable ): Future[Written] = put( doc.toDoc )
 
     /** Deletes the given key and revision*/
     def delete ( key: String, revision: String ): Future[Written]
@@ -30,9 +54,14 @@ class Database private[foldout] ( private val requestor: Requestor ) {
     /** Deletes the given document */
     def delete ( doc: Doc ): Future[Written] = delete( doc.id, doc.rev )
 
+    /** Puts the given document */
+    def delete ( doc: Documentable ): Future[Written] = delete( doc.toDoc )
+
     /** Posts the given document */
-    def post ( doc: Doc ): Future[Written]
-        = Written( requestor.post(doc.obj) )
+    def post ( doc: Doc ): Future[Written] = Written( requestor.post(doc.obj) )
+
+    /** Puts the given document */
+    def post ( doc: Documentable ): Future[Written] = post( doc.toDoc )
 
     /** Returns all the documents in a database */
     def allDocs: BulkRead = new BulkRead( requestor, "_all_docs" )

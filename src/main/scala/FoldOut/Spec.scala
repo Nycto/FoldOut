@@ -31,7 +31,7 @@ object ViewSpec {
 case class ViewSpec ( val map: String, val reduce: Option[String] ) {
 
     /** Returns this view as json */
-    def toJson: nElement = {
+    def toJson: nObject = {
         reduce.foldLeft( nObject( "map" -> map ) ) {
             (obj, method) => obj + ("reduce" -> method)
         }
@@ -79,7 +79,7 @@ object DesignSpec {
 case class DesignSpec (
     val language: String,
     val views: Map[String, ViewSpec]
-) {
+) extends Keyable with Documentable {
 
     /** Generates a SHA1 hash of this spec */
     lazy val sha1: String = {
@@ -97,13 +97,19 @@ case class DesignSpec (
         = new DesignSpec( language, other.views ++ views )
 
     /** Returns this view as json */
-    def toJson: nElement = {
+    def toJson: nObject = {
         val viewObj = views.foldLeft( nObject() ) {
             (accum, pair) => accum + (pair._1 -> pair._2.toJson)
         }
 
         nObject( "Language" -> language, "views" -> viewObj )
     }
+
+    /** {@inheritDoc} */
+    override def toDocKey: String = "_design/" + sha1
+
+    /** {@inheritDoc} */
+    override def toDoc: Doc = Doc( toJson + ("_id" -> toDocKey) )
 
 }
 
