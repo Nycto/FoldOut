@@ -37,6 +37,14 @@ class SpecTest extends Specification {
             )
         }
 
+        "generate a consistent sha1 hash" in {
+            ViewSpec("function(){/* map */}").sha1
+                .must_==("b51f8c5d56a7c6c35fb5b5cf6d1bb2528017257f")
+
+            ViewSpec("function(){/* map */}", "function(){/* reduce */}").sha1
+                .must_==("fb7fb246113a2486ace763c34e9163729dfef304")
+        }
+
     }
 
     "DesignSpecs" should {
@@ -64,6 +72,15 @@ class SpecTest extends Specification {
                 + """{"key":{"map":"function(){/* map */}"}}"""
                 + """}"""
             )
+        }
+
+        "generate a consistent hash" in {
+            DesignSpec(
+                language = "JavaScript",
+                "key" -> ViewSpec("function(){/* map */}"),
+                "xyz" -> ViewSpec("function(){/* other */}"),
+                "abc" -> ViewSpec("function(){/*m*/}", "function(){/*r*/}")
+            ).sha1 must_== "a7027fe68733f10a867e004a3abb775691e55ea6"
         }
 
     }

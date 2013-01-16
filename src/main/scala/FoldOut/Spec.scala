@@ -1,6 +1,7 @@
 package com.roundeights.foldout
 
 import com.roundeights.scalon._
+import com.roundeights.hasher.Hasher
 
 /**
  * ViewSpec Companion
@@ -35,6 +36,9 @@ case class ViewSpec ( val map: String, val reduce: Option[String] ) {
             (obj, method) => obj + ("reduce" -> method)
         }
     }
+
+    /** Generates a SHA1 hash of this spec */
+    def sha1: String = Hasher( map + reduce.getOrElse("") ).sha1
 
 }
 
@@ -76,6 +80,13 @@ case class DesignSpec (
     val language: String,
     val views: Map[String, ViewSpec]
 ) {
+
+    /** Generates a SHA1 hash of this spec */
+    lazy val sha1: String = {
+        views.keys.toList.sorted.foldLeft( Hasher( language ) ) {
+            (hash, key) => hash.salt(key).salt( views(key).sha1 )
+        }.sha1
+    }
 
     /** Adds a new view to this design */
     def + ( view: (String, ViewSpec) ): DesignSpec
