@@ -22,7 +22,7 @@ object Doc {
  * @param obj The underlying notation object that contains the data for
  *      this document
  */
-class Doc ( val obj: nObject ) extends nObject.Interface[Doc] {
+class Doc ( val obj: nObject ) extends nObject.Interface[Doc] with Equals {
 
     /** Returns this document as JSON */
     def json: String = obj.json
@@ -50,6 +50,18 @@ class Doc ( val obj: nObject ) extends nObject.Interface[Doc] {
         this.rev
         this
     }
+
+    /** {@inheritDoc} */
+    override def equals ( that: Any ): Boolean = that match {
+        case thatDoc: Doc => thatDoc.canEqual(this) && thatDoc.obj == obj
+        case _ => false
+    }
+
+    /** {@inheritDoc} */
+    override def canEqual ( that: Any ) = that.isInstanceOf[Doc]
+
+    /** {@inheritDoc} */
+    override def hashCode = obj.hashCode
 
 }
 
