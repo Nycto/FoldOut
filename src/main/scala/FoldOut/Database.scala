@@ -103,6 +103,12 @@ class Database private[foldout] ( private val requestor: Requestor ) {
     /** Sets a value, writing over whatever is already there */
     def push ( doc: Documentable ): Future[Written] = push( doc.toDoc )
 
+    /** Creates this database */
+    def create: Future[Unit] = requestor.put("/").map { (v) => () }
+
+    /** Deletes this database */
+    def delete: Future[Unit] = requestor.delete("/").map { (v) => () }
+
 }
 
 

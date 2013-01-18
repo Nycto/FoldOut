@@ -52,6 +52,10 @@ private[foldout] class Requestor (
     ): Future[Option[nElement]]
         = execute( builder.get(key, params) )
 
+    /** Sends a put request */
+    def put( key: String ): Future[Option[nElement]]
+        = execute( builder.put(key) )
+
     /** Puts the given document */
     def put( key: String, doc: nElement ): Future[Option[nElement]]
         = execute( builder.put(key, doc) )
@@ -59,6 +63,10 @@ private[foldout] class Requestor (
     /** Deletes the given key/revision */
     def delete( key: String, revision: String ): Future[Option[nElement]]
         = execute( builder.delete(key, revision) )
+
+    /** Deletes the given key */
+    def delete( key: String ): Future[Option[nElement]]
+        = execute( builder.delete(key) )
 
     /** Posts the given document */
     def post( doc: nElement ): Future[Option[nElement]]

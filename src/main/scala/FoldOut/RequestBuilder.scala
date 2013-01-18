@@ -41,9 +41,17 @@ private[foldout] class RequestBuilder (
     def get ( key: String, params: Map[String, String] = Map() ): Request
         = build("GET", Some(key), params)
 
-    /** Returns the document with the given key */
+    /** Deletes the document with the given key */
     def delete ( key: String, revision: String ): Request
         = build("DELETE", Some(key), Map("rev" -> revision))
+
+    /** Sends a delete for the given path */
+    def delete ( key: String ): Request
+        = build("DELETE", Some(key), Map(), None)
+
+    /** Sends a PUT request without a body */
+    def put ( key: String ): Request
+        = build("PUT", Some(key), Map(), None)
 
     /** Sends the given document using a PUT request */
     def put ( key: String, doc: nElement ): Request
