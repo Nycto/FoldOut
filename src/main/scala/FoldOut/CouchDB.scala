@@ -17,7 +17,8 @@ object CouchDB {
         auth: Option[Auth] = None,
         timeout: Int = 5000,
         maxConnections: Int = 10
-    ) = new CouchDB( host, port, ssl, auth, timeout, maxConnections )
+    )( implicit context: ExecutionContext )
+        = new CouchDB( host, port, ssl, auth, timeout, maxConnections )
 
     /** Constructs a new CouchDB connection pool to cloudant */
     def cloudant (
@@ -26,12 +27,14 @@ object CouchDB {
         db: Option[String] = None,
         timeout: Int = 5000,
         maxConnections: Int = 10
-    ) = new CouchDB(
-        "%s.cloudant.com".format( db.getOrElse(username) ),
-        443, true,
-        Some(Auth(username, password)),
-        timeout, maxConnections
-    )
+    )( implicit context: ExecutionContext ) = {
+        new CouchDB(
+            "%s.cloudant.com".format( db.getOrElse(username) ),
+            443, true,
+            Some(Auth(username, password)),
+            timeout, maxConnections
+        )
+    }
 
 }
 
@@ -45,7 +48,7 @@ class CouchDB (
     auth: Option[Auth] = None,
     timeout: Int = 5000,
     maxConnections: Int = 10
-) {
+)( implicit context: ExecutionContext ) {
 
     /** The internal interface for making requests to CouchDB */
     private val requestor = new Requestor(
@@ -57,9 +60,7 @@ class CouchDB (
     def close: Unit = requestor.close
 
     /** Returns a the list of databases */
-    def allDBs
-        ( implicit context: ExecutionContext )
-    : Future[Set[String]] = {
+    def allDBs: Future[Set[String]] = {
         requestor.get("_all_dbs").map {
             (opt: Option[nElement]) => {
                 opt.get.asArray.foldLeft( Set[String]() ) {

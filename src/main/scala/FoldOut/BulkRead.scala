@@ -51,12 +51,12 @@ class BulkRead private[foldout] (
     private val requestor: Requestor,
     private val docID: String,
     private val params: Map[Params.Param, String] = Map()
-) {
+)( implicit context: ExecutionContext ) {
 
     import Params._
 
     /** Executes this request and returns a future containing the results */
-    def exec( implicit context: ExecutionContext ): Future[RowList] = {
+    def exec: Future[RowList] = {
         val parameters = params.map { pair => ((pair._1.toString, pair._2)) }
         requestor
             .get( docID, parameters )

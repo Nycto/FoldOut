@@ -25,13 +25,13 @@ trait Keyable {
 /**
  * A CouchDB database
  */
-class Database private[foldout] ( private val requestor: Requestor ) {
+class Database private[foldout]
+    ( private val requestor: Requestor )
+    ( implicit context: ExecutionContext )
+{
 
     /** Returns the document with the given key */
-    def get
-        ( key: String )
-        ( implicit context: ExecutionContext )
-    : Future[Option[Doc]] = {
+    def get ( key: String ): Future[Option[Doc]] = {
         requestor.get( key ).map {
             (opt: Option[nElement]) => opt.map {
                 elem => Doc( elem.asObject )
@@ -40,63 +40,39 @@ class Database private[foldout] ( private val requestor: Requestor ) {
     }
 
     /** Returns the document with the given key */
-    def get
-        ( key: Keyable )
-        ( implicit context: ExecutionContext )
-    : Future[Option[Doc]]
+    def get ( key: Keyable ): Future[Option[Doc]]
         = get( key.toDocKey )
 
     /** Returns an updated version of the given document*/
-    def get
-        ( doc: Doc )
-        ( implicit context: ExecutionContext )
-    : Future[Option[Doc]]
+    def get ( doc: Doc ): Future[Option[Doc]]
         = get( doc.id )
 
     /** Puts the given document */
-    def put ( doc: Doc )( implicit context: ExecutionContext ): Future[Written]
+    def put ( doc: Doc ): Future[Written]
         = Written( requestor.put( doc.id, doc.obj ) )
 
     /** Puts the given document */
-    def put
-        ( doc: Documentable )
-        ( implicit context: ExecutionContext )
-    : Future[Written]
+    def put ( doc: Documentable ): Future[Written]
         = put( doc.toDoc )
 
     /** Deletes the given key and revision*/
-    def delete
-        ( key: String, revision: String )
-        ( implicit context: ExecutionContext )
-    : Future[Written]
+    def delete ( key: String, revision: String ): Future[Written]
         = Written( requestor.delete( key, revision ) )
 
     /** Deletes the given document */
-    def delete
-        ( doc: Doc )
-        ( implicit context: ExecutionContext )
-    : Future[Written]
+    def delete ( doc: Doc ): Future[Written]
         = delete( doc.id, doc.rev )
 
     /** Puts the given document */
-    def delete
-        ( doc: Documentable )
-        ( implicit context: ExecutionContext )
-    : Future[Written]
+    def delete ( doc: Documentable ): Future[Written]
         = delete( doc.toDoc )
 
     /** Posts the given document */
-    def post
-        ( doc: Doc )
-        ( implicit context: ExecutionContext )
-    : Future[Written]
+    def post ( doc: Doc ): Future[Written]
         = Written( requestor.post(doc.obj) )
 
     /** Puts the given document */
-    def post
-        ( doc: Documentable )
-        ( implicit context: ExecutionContext )
-    : Future[Written]
+    def post ( doc: Documentable ): Future[Written]
         = post( doc.toDoc )
 
     /** Returns all the documents in a database */
@@ -111,10 +87,7 @@ class Database private[foldout] ( private val requestor: Requestor ) {
         = design( designName ).view( viewName )
 
     /** Puts a value, writing over whatever is already there */
-    def push
-        ( doc: Doc, retries: Int = 3 )
-        ( implicit context: ExecutionContext )
-    : Future[Written] = {
+    def push ( doc: Doc, retries: Int = 3 ): Future[Written] = {
         get( doc ).flatMap {
             _ match {
                 case None => put( doc ) recoverWith {
@@ -137,18 +110,15 @@ class Database private[foldout] ( private val requestor: Requestor ) {
     }
 
     /** Sets a value, writing over whatever is already there */
-    def push
-        ( doc: Documentable )
-        ( implicit context: ExecutionContext )
-    : Future[Written]
+    def push ( doc: Documentable ): Future[Written]
         = push( doc.toDoc )
 
     /** Creates this database */
-    def create ( implicit context: ExecutionContext ): Future[Unit]
+    def create: Future[Unit]
         = requestor.put("/").map { (v) => () }
 
     /** Deletes this database */
-    def delete ( implicit context: ExecutionContext ): Future[Unit]
+    def delete: Future[Unit]
         = requestor.delete("/").map { (v) => () }
 
 }
