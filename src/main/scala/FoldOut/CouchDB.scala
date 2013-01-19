@@ -2,8 +2,7 @@ package com.roundeights.foldout
 
 import com.roundeights.scalon.nElement
 
-import scala.concurrent.Future
-import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.{Future, ExecutionContext}
 
 /**
  * CouchDB companion
@@ -58,9 +57,15 @@ class CouchDB (
     def close: Unit = requestor.close
 
     /** Returns a the list of databases */
-    def allDBs: Future[Set[String]] = requestor.get("_all_dbs").map {
-        (opt: Option[nElement]) => opt.get.asArray.foldLeft( Set[String]() ) {
-            (accum, elem) => accum + elem.asString
+    def allDBs
+        ( implicit context: ExecutionContext )
+    : Future[Set[String]] = {
+        requestor.get("_all_dbs").map {
+            (opt: Option[nElement]) => {
+                opt.get.asArray.foldLeft( Set[String]() ) {
+                    (accum, elem) => accum + elem.asString
+                }
+            }
         }
     }
 

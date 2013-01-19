@@ -2,8 +2,7 @@ package com.roundeights.foldout
 
 import com.roundeights.scalon.nElement
 
-import scala.concurrent.Future
-import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.{Future, ExecutionContext}
 
 /**
  * A trait for objects that can convert themselves to a document
@@ -29,7 +28,10 @@ trait Keyable {
 class Database private[foldout] ( private val requestor: Requestor ) {
 
     /** Returns the document with the given key */
-    def get ( key: String ): Future[Option[Doc]] = {
+    def get
+        ( key: String )
+        ( implicit context: ExecutionContext )
+    : Future[Option[Doc]] = {
         requestor.get( key ).map {
             (opt: Option[nElement]) => opt.map {
                 elem => Doc( elem.asObject )
@@ -38,33 +40,64 @@ class Database private[foldout] ( private val requestor: Requestor ) {
     }
 
     /** Returns the document with the given key */
-    def get ( key: Keyable ): Future[Option[Doc]] = get( key.toDocKey )
+    def get
+        ( key: Keyable )
+        ( implicit context: ExecutionContext )
+    : Future[Option[Doc]]
+        = get( key.toDocKey )
 
     /** Returns an updated version of the given document*/
-    def get ( doc: Doc ): Future[Option[Doc]] = get( doc.id )
+    def get
+        ( doc: Doc )
+        ( implicit context: ExecutionContext )
+    : Future[Option[Doc]]
+        = get( doc.id )
 
     /** Puts the given document */
-    def put ( doc: Doc ): Future[Written]
+    def put ( doc: Doc )( implicit context: ExecutionContext ): Future[Written]
         = Written( requestor.put( doc.id, doc.obj ) )
 
     /** Puts the given document */
-    def put ( doc: Documentable ): Future[Written] = put( doc.toDoc )
+    def put
+        ( doc: Documentable )
+        ( implicit context: ExecutionContext )
+    : Future[Written]
+        = put( doc.toDoc )
 
     /** Deletes the given key and revision*/
-    def delete ( key: String, revision: String ): Future[Written]
+    def delete
+        ( key: String, revision: String )
+        ( implicit context: ExecutionContext )
+    : Future[Written]
         = Written( requestor.delete( key, revision ) )
 
     /** Deletes the given document */
-    def delete ( doc: Doc ): Future[Written] = delete( doc.id, doc.rev )
+    def delete
+        ( doc: Doc )
+        ( implicit context: ExecutionContext )
+    : Future[Written]
+        = delete( doc.id, doc.rev )
 
     /** Puts the given document */
-    def delete ( doc: Documentable ): Future[Written] = delete( doc.toDoc )
+    def delete
+        ( doc: Documentable )
+        ( implicit context: ExecutionContext )
+    : Future[Written]
+        = delete( doc.toDoc )
 
     /** Posts the given document */
-    def post ( doc: Doc ): Future[Written] = Written( requestor.post(doc.obj) )
+    def post
+        ( doc: Doc )
+        ( implicit context: ExecutionContext )
+    : Future[Written]
+        = Written( requestor.post(doc.obj) )
 
     /** Puts the given document */
-    def post ( doc: Documentable ): Future[Written] = post( doc.toDoc )
+    def post
+        ( doc: Documentable )
+        ( implicit context: ExecutionContext )
+    : Future[Written]
+        = post( doc.toDoc )
 
     /** Returns all the documents in a database */
     def allDocs: BulkRead = new BulkRead( requestor, "_all_docs" )
@@ -78,7 +111,10 @@ class Database private[foldout] ( private val requestor: Requestor ) {
         = design( designName ).view( viewName )
 
     /** Puts a value, writing over whatever is already there */
-    def push ( doc: Doc, retries: Int = 3 ): Future[Written] = {
+    def push
+        ( doc: Doc, retries: Int = 3 )
+        ( implicit context: ExecutionContext )
+    : Future[Written] = {
         get( doc ).flatMap {
             _ match {
                 case None => put( doc ) recoverWith {
@@ -101,13 +137,19 @@ class Database private[foldout] ( private val requestor: Requestor ) {
     }
 
     /** Sets a value, writing over whatever is already there */
-    def push ( doc: Documentable ): Future[Written] = push( doc.toDoc )
+    def push
+        ( doc: Documentable )
+        ( implicit context: ExecutionContext )
+    : Future[Written]
+        = push( doc.toDoc )
 
     /** Creates this database */
-    def create: Future[Unit] = requestor.put("/").map { (v) => () }
+    def create ( implicit context: ExecutionContext ): Future[Unit]
+        = requestor.put("/").map { (v) => () }
 
     /** Deletes this database */
-    def delete: Future[Unit] = requestor.delete("/").map { (v) => () }
+    def delete ( implicit context: ExecutionContext ): Future[Unit]
+        = requestor.delete("/").map { (v) => () }
 
 }
 

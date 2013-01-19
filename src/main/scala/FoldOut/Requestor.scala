@@ -3,7 +3,6 @@ package com.roundeights.foldout
 import com.roundeights.scalon.nElement
 
 import scala.concurrent.{Promise, Future}
-import scala.concurrent.ExecutionContext.Implicits.global
 
 import com.ning.http.client.{ AsyncHttpClientConfig, AsyncHttpClient, Request }
 

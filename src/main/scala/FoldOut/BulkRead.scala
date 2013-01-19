@@ -2,8 +2,7 @@ package com.roundeights.foldout
 
 import com.roundeights.scalon._
 
-import scala.concurrent.Future
-import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.{Future, ExecutionContext}
 
 /**
  * The list of parameters that BulkRead operations support
@@ -57,7 +56,7 @@ class BulkRead private[foldout] (
     import Params._
 
     /** Executes this request and returns a future containing the results */
-    def exec: Future[RowList] = {
+    def exec( implicit context: ExecutionContext ): Future[RowList] = {
         val parameters = params.map { pair => ((pair._1.toString, pair._2)) }
         requestor
             .get( docID, parameters )

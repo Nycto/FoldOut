@@ -2,8 +2,7 @@ package com.roundeights.foldout
 
 import com.roundeights.scalon.nElement
 
-import scala.concurrent.Future
-import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.{Future, ExecutionContext}
 
 /**
  * Written companion
@@ -11,7 +10,10 @@ import scala.concurrent.ExecutionContext.Implicits.global
 object Written {
 
     /** Builds a new instance from respose future */
-    private[foldout] def apply ( result: Future[Option[nElement]] ) = {
+    private[foldout] def apply
+        ( result: Future[Option[nElement]] )
+        ( implicit context: ExecutionContext )
+    :Future[Written] = {
         result.map { opt =>
             new Written(
                 opt.getOrElse( throw new RequestError(
