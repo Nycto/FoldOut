@@ -1,8 +1,8 @@
 package com.roundeights.foldout
 
 import com.roundeights.scalon.nElement
-
 import scala.concurrent.{Future, ExecutionContext}
+import org.slf4j._
 
 /**
  * CouchDB companion
@@ -47,13 +47,14 @@ class CouchDB (
     ssl: Boolean = true,
     auth: Option[Auth] = None,
     timeout: Int = 5000,
-    maxConnections: Int = 10
+    maxConnections: Int = 10,
+    logger: Logger = LoggerFactory.getLogger( classOf[CouchDB] )
 )( implicit context: ExecutionContext ) {
 
     /** The internal interface for making requests to CouchDB */
     private val requestor = new Requestor(
         new UrlBuilder( host, port, ssl ),
-        auth, timeout, maxConnections
+        auth, timeout, maxConnections, logger
     )
 
     /** Sends a message to close the connection down */
