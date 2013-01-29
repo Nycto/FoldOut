@@ -3,6 +3,10 @@ package com.roundeights.foldout
 import com.roundeights.scalon._
 import com.roundeights.hasher.Hasher
 
+import java.net.URL
+import scala.io.Source
+import java.io.FileNotFoundException
+
 /**
  * ViewSpec Companion
  */
@@ -22,6 +26,24 @@ object ViewSpec {
         new ViewSpec( obj.str("map"), obj.str_?("reduce") )
     }
 
+    /**
+     * Loads a view from files in a directory. This looks for a file named
+     * map.js and one named reduce.js (not required).
+     */
+    def fromDir ( source: URL ): ViewSpec = {
+        if ( source == null )
+            throw new FileNotFoundException("Null ViewSpec URL")
+
+        val trimmed = source.toString.reverse.dropWhile(_ == '/').reverse
+        val map = Source.fromURL( source + "/map.js" ).mkString
+
+        try {
+            ViewSpec( map, Source.fromURL(source + "/reduce.js").mkString )
+        }
+        catch {
+            case err: FileNotFoundException => ViewSpec( map )
+        }
+    }
 }
 
 /**

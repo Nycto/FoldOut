@@ -47,6 +47,41 @@ class SpecTest extends Specification {
 
     }
 
+    "ViewSpecs built from a directory" should {
+
+        "Work when only map.js is defined" in {
+            ViewSpec.fromDir(
+                getClass.getResource("/mapOnlyView")
+            ).toJson.toString.must_== (
+                """{"map":"function(){/*map*/}\n"}"""
+            )
+        }
+
+        "Load reduce.js when available" in {
+            ViewSpec.fromDir(
+                getClass.getResource("/withReduce")
+            ).toJson.toString.must_== (
+                "{"
+                    + """ "map":"function(){/*map*/}\n", """.trim
+                    + """ "reduce":"function(){/*reduce*/}\n" """.trim
+                + "}"
+            )
+        }
+
+        "Throw an error when map.js is missing" in {
+            ViewSpec.fromDir(
+                getClass.getResource("/empty")
+            ) must throwA[java.io.FileNotFoundException]
+        }
+
+        "Throw an error when the directory doesnt exist" in {
+            ViewSpec.fromDir(
+                getClass.getResource("/doesNotExist")
+            ) must throwA[java.io.FileNotFoundException]
+        }
+
+    }
+
     "DesignSpecs" should {
 
         "build themselves from json" in {
