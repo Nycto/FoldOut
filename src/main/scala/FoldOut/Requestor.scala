@@ -124,6 +124,14 @@ private[foldout] class Requestor (
     def post( doc: nElement ): Future[Option[nElement]]
         = execute( builder.post(doc) )
 
+    /** Posts the given document */
+    def post(
+        key: String,
+        doc: nElement,
+        params: Map[String, String]
+    ): Future[Option[nElement]]
+        = execute( builder.post(key, doc, params) )
+
 }
 
 

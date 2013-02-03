@@ -61,6 +61,13 @@ private[foldout] class RequestBuilder (
     def post ( doc: nElement ): Request
         = build("POST", None, Map(), Some(doc))
 
+    /** Sends the given document using a PUT request */
+    def post (
+        key: String,
+        doc: nElement,
+        params: Map[String, String]
+    ): Request = build("POST", Some(key), params, Some(doc))
+
 }
 
 

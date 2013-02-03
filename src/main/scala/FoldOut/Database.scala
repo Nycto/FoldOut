@@ -121,6 +121,11 @@ class Database private[foldout]
     def delete: Future[Unit]
         = requestor.delete("/").map { (v) => () }
 
+    /** Runs a temporary view */
+    def tempView ( view: ViewSpec ): BulkRead = new BulkRead(
+        (params) => requestor.post("_temp_view", view.toJson, params)
+    )
+
 }
 
 

@@ -48,25 +48,28 @@ private[foldout] object Params extends Enumeration {
  * http://wiki.apache.org/couchdb/HTTP_view_API
  */
 class BulkRead private[foldout] (
-    private val requestor: Requestor,
-    private val docID: String,
+    private val execute: (Map[String,String]) => Future[Option[nElement]],
     private val params: Map[Params.Param, String] = Map()
 )( implicit context: ExecutionContext ) {
 
     import Params._
 
+    /** Instantiates a basic bulk reader for performing GET requests */
+    def this
+        ( requestor: Requestor, docID: String )
+        ( implicit context: ExecutionContext )
+        = this( (params) => requestor.get(docID, params) )
+
     /** Executes this request and returns a future containing the results */
     def exec: Future[RowList] = {
         val parameters = params.map { pair => ((pair._1.toString, pair._2)) }
-        requestor
-            .get( docID, parameters )
-            .map { opt => RowList( opt.get.asObject ) }
+        execute( parameters ).map { opt => RowList( opt.get.asObject ) }
     }
 
     /** A helper that adds the given param and returns a new BulkRead */
     private def withParam ( param: Param, value: String ): BulkRead = {
         new BulkRead(
-            requestor, docID,
+            execute,
             params -- Params.precludes(param) + ((param, value))
         )
     }
