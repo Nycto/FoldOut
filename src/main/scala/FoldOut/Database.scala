@@ -2,7 +2,8 @@ package com.roundeights.foldout
 
 import com.roundeights.scalon.nElement
 
-import scala.concurrent.{Future, ExecutionContext}
+import scala.concurrent.duration._
+import scala.concurrent._
 
 /**
  * A trait for objects that can convert themselves to a document
@@ -119,6 +120,13 @@ class Database private[foldout]
     /** Creates this database */
     def create: Future[Unit]
         = requestor.put("/").map { (v) => () }
+
+    /** Creates this database and blocks until its sure to exist */
+    def createNow: Unit = try {
+        Await.result( create, Duration(10, "second") )
+    } catch {
+        case _: RequestError => ()
+    }
 
     /** Deletes this database */
     def delete: Future[Unit]
