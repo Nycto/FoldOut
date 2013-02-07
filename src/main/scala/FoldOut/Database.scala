@@ -82,6 +82,9 @@ class Database private[foldout]
     def design ( name: String ): Design
         = new Design( requestor.withBasePath( "_design/%s".format(name) ) )
 
+    /** Returns access to the given design */
+    def design ( spec: DesignSpec ): Design = design( spec.sha1 )
+
     /** Returns the given view */
     def view ( designName: String, viewName: String ): BulkRead
         = design( designName ).view( viewName )
