@@ -61,6 +61,45 @@ class DatabaseTest extends Specification with Mockito {
 
     }
 
+    "Database.create" should {
+
+        "Run a PUT if the database doesn't exist" in {
+            val request = mock[Requestor]
+            request.get("/") returns Future.failed( new RequestError("No DB") )
+            request.put("/") returns Future.successful( Some( nObject() ) )
+
+            await( new Database(request).create )
+
+            there was one(request).put("/")
+        }
+
+        "Succeed if the database exists" in {
+            val request = mock[Requestor]
+            request.get("/") returns Future.successful( Some( nObject() ) )
+            request.put( any[String] ) returns Future.failed(
+                new Exception("Should not be called")
+            )
+            await( new Database(request).create )
+            ok
+        }
+
+        "Fail if the GET request fails for any other reason" in {
+            val err = new Exception("Should be caught")
+            val request = mock[Requestor]
+            request.get("/") returns Future.failed( err )
+            await( new Database(request).create.failed ) must_== err
+        }
+
+        "Fail if the PUT request fails" in {
+            val err = new Exception("Should be caught")
+            val request = mock[Requestor]
+            request.get("/") returns Future.failed( new RequestError("No DB") )
+            request.put("/") returns Future.failed( err )
+            await( new Database(request).create.failed ) must_== err
+        }
+
+    }
+
 }
 
 

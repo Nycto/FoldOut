@@ -118,15 +118,16 @@ class Database private[foldout]
         = push( doc.toDoc )
 
     /** Creates this database */
-    def create: Future[Unit]
-        = requestor.put("/").map { (v) => () }
+    def create: Future[Unit] = {
+        requestor.get("/").map( _ => () ).recoverWith {
+            // TODO: The exception thrown when a table exists should really
+            // be a custom subclass of RequestError
+            case _: RequestError => requestor.put("/").map { _ => () }
+        }
+    }
 
     /** Creates this database and blocks until its sure to exist */
-    def createNow: Unit = try {
-        Await.result( create, Duration(10, "second") )
-    } catch {
-        case _: RequestError => ()
-    }
+    def createNow: Unit = Await.result( create, Duration(10, "second") )
 
     /** Deletes this database */
     def delete: Future[Unit]
