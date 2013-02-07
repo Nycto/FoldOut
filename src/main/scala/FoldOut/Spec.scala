@@ -99,8 +99,8 @@ object DesignSpec {
  * set of views
  */
 case class DesignSpec (
-    val language: String,
-    val views: Map[String, ViewSpec]
+    val language: String = "javascript",
+    val views: Map[String, ViewSpec] = Map()
 ) extends Keyable with Documentable {
 
     /** Generates a SHA1 hash of this spec */
