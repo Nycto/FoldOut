@@ -70,6 +70,30 @@ class BulkReadTest extends Specification with Mockito {
             ))
         }
 
+        "handle string list keys" in {
+            val request = mockRequestor()
+            val read = new BulkRead(request, "path")
+                .key("abc123", "lmnop456", "xyz789")
+
+            exec( read ) must_== expected
+
+            there was one(request).get("path", Map(
+                "key" -> """["abc123","lmnop456","xyz789"]"""
+            ))
+        }
+
+        "handle nElement list keys" in {
+            val request = mockRequestor()
+            val read = new BulkRead(request, "path")
+                .key( nInt(123), nFloat(3.14), nObject(), nList() )
+
+            exec( read ) must_== expected
+
+            there was one(request).get("path", Map(
+                "key" -> """[123,3.14,{},[]]"""
+            ))
+        }
+
         "handle list based range keys" in {
             val request = mockRequestor()
             val read = new BulkRead(request, "path")

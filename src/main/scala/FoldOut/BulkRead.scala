@@ -79,7 +79,18 @@ class BulkRead private[foldout] (
         = withParam( param, value.json )
 
     /** Defines the specific key to return */
-    def key ( id: String ): BulkRead = withParam(Key, nString(id))
+    def key ( k: nElement ): BulkRead = withParam( Key, k )
+
+    /** Defines the specific key to return */
+    def key ( k: nElement, k2: nElement, k3: nElement* ): BulkRead
+        = withParam( Key, k :: k2 :: nList(k3:_*) )
+
+    /** Defines the specific key to return */
+    def key ( k: String ): BulkRead = key( nString(k) )
+
+    /** Defines the specific key to return */
+    def key ( k: String, k2: String, k3: String* ): BulkRead
+        = key( k :: k2 :: nList( k3:_* ) )
 
     /** Defines a list of keys to return */
     def keys ( ids: String* ): BulkRead = withParam( Keys, nList( ids:_* ) )
