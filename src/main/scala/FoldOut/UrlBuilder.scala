@@ -38,7 +38,7 @@ private[foldout] class UrlBuilder (
 ) {
 
     /** The base path to attach to each request */
-    private val rootPath = basePath.map {
+    val rootPath = basePath.map {
         "/" + _.dropWhile( _ == '/' ).reverse.dropWhile( _ == '/' ).reverse
     }
 

@@ -63,6 +63,9 @@ private[foldout] class Requestor (
     private val log: RequestLogger
 ) {
 
+    /** Returns the base path of this Requestor */
+    def rootPath = builder.rootPath.getOrElse("/")
+
     /** Alternate constructor that puts together an async client */
     def this (
         url: UrlBuilder, auth: Option[Auth],

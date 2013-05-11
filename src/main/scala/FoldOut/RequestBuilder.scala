@@ -13,6 +13,9 @@ private[foldout] class RequestBuilder (
     private val auth: Option[Auth]
 ) {
 
+    /** Returns the base path of this Request Builder */
+    def rootPath = url.rootPath
+
     /** Constructs a new RequestBuilder that adds a base path to requests */
     def withBasePath( basePath: String ): RequestBuilder
         = new RequestBuilder( url.withBasePath(basePath), auth )

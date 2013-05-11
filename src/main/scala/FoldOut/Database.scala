@@ -31,6 +31,9 @@ class Database private[foldout]
     ( implicit context: ExecutionContext )
 {
 
+    /** {@inheritDoc} */
+    override def toString = "CouchDatabase(%s)".format( requestor.rootPath )
+
     /** Returns the document with the given key */
     def get ( key: String ): Future[Option[Doc]] = {
         requestor.get( key ).map {
