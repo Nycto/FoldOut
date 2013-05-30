@@ -16,8 +16,8 @@ resolvers ++= Seq(
 
 // Application dependencies
 libraryDependencies ++= Seq(
-    "com.roundeights" %% "scalon" % "0.1" from "http://dl.dropbox.com/u/21584061/maven/scalon_2.10-0.1.jar",
-    "com.roundeights" %% "hasher" % "0.3" from "http://dl.dropbox.com/u/21584061/maven/hasher_2.10-0.3.jar",
+    "com.roundeights" %% "scalon" % "0.1",
+    "com.roundeights" %% "hasher" % "1.0.0",
     "com.ning" % "async-http-client" % "1.7.9",
     "org.slf4j" % "slf4j-simple" % "1.7.2",
     "commons-codec" % "commons-codec" % "1.7",
