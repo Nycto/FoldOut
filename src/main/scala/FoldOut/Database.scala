@@ -89,6 +89,16 @@ class Database private[foldout]
     /** Returns access to the given design */
     def design ( spec: DesignSpec ): Design = design( spec.sha1 )
 
+    /** Creates a design from a list of jar resource paths */
+    def designDir ( views: (String, String)* ): Future[Design] = {
+        val spec = views.foldLeft( DesignSpec() ) {
+            (accum, view) => accum + (
+                view._1 -> ViewSpec.fromDir( getClass.getResource( view._2 ) )
+            )
+        }
+        push( spec ).map( _ => design( spec ) )
+    }
+
     /** Returns the given view */
     def view ( designName: String, viewName: String ): BulkRead
         = design( designName ).view( viewName )
