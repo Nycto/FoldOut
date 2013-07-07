@@ -90,13 +90,24 @@ class Database private[foldout]
     def design ( spec: DesignSpec ): Design = design( spec.sha1 )
 
     /** Creates a design from a list of jar resource paths */
-    def designDir ( views: (String, String)* ): Future[Design] = {
+    def designDir (
+        loader: ClassLoader,
+        views: (String, String)*
+    ): Future[Design] = {
         val spec = views.foldLeft( DesignSpec() ) {
             (accum, view) => accum + (
-                view._1 -> ViewSpec.fromDir( getClass.getResource( view._2 ) )
+                view._1 -> ViewSpec.fromDir( loader.getResource( view._2 ) )
             )
         }
         push( spec ).map( _ => design( spec ) )
+    }
+
+    /** Creates a design from a list of jar resource paths */
+    def designDir (
+        loaderFrom: Class[_],
+        views: (String, String)*
+    ): Future[Design] = {
+        designDir( loaderFrom.getClassLoader, views:_* )
     }
 
     /** Returns the given view */
