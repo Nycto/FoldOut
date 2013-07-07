@@ -47,19 +47,19 @@ class SpecTest extends Specification {
 
     }
 
-    "ViewSpecs built from a directory" should {
+    "ViewSpecs built from a Jar resource" should {
 
         "Work when only map.js is defined" in {
-            ViewSpec.fromDir(
-                getClass.getResource("/mapOnlyView")
+            ViewSpec.fromJar(
+                classOf[ViewSpec], "/mapOnlyView"
             ).toJson.toString.must_== (
                 """{"map":"function(){/*map*/}\n"}"""
             )
         }
 
         "Load reduce.js when available" in {
-            ViewSpec.fromDir(
-                getClass.getResource("/withReduce")
+            ViewSpec.fromJar(
+                classOf[ViewSpec], "/withReduce"
             ).toJson.toString.must_== (
                 "{"
                     + """ "map":"function(){/*map*/}\n", """.trim
@@ -69,14 +69,14 @@ class SpecTest extends Specification {
         }
 
         "Throw an error when map.js is missing" in {
-            ViewSpec.fromDir(
-                getClass.getResource("/empty")
+            ViewSpec.fromJar(
+                classOf[ViewSpec], "/empty"
             ) must throwA[java.io.FileNotFoundException]
         }
 
         "Throw an error when the directory doesnt exist" in {
-            ViewSpec.fromDir(
-                getClass.getResource("/doesNotExist")
+            ViewSpec.fromJar(
+                classOf[ViewSpec], "/doesNotExist"
             ) must throwA[java.io.FileNotFoundException]
         }
 

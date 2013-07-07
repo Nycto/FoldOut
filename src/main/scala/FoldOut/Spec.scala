@@ -27,23 +27,36 @@ object ViewSpec {
     }
 
     /**
-     * Loads a view from files in a directory. This looks for a file named
+     * Loads a view from jar resource files. This looks for a file named
      * map.js and one named reduce.js (not required).
      */
-    def fromDir ( source: URL ): ViewSpec = {
-        if ( source == null )
-            throw new FileNotFoundException("Null ViewSpec URL")
+    def fromJar ( loader: ClassLoader, dir: String ): ViewSpec = {
+        val trimmed = dir.dropWhile(_ == '/')
+            .reverse.dropWhile(_ == '/').reverse
 
-        val trimmed = source.toString.reverse.dropWhile(_ == '/').reverse
-        val map = Source.fromURL( source + "/map.js" ).mkString
+        val mapPath = trimmed + "/map.js"
+        val map = Source.fromURL(
+            Option( loader.getResource( mapPath ) ).getOrElse(
+                throw new FileNotFoundException(
+                    "Could not find Jar resource: %s".format(mapPath)
+                )
+            )
+        ).mkString
 
-        try {
-            ViewSpec( map, Source.fromURL(source + "/reduce.js").mkString )
-        }
-        catch {
-            case err: FileNotFoundException => ViewSpec( map )
-        }
+        Option( loader.getResource( trimmed + "/reduce.js" ) ).map(
+            reduceUrl => ViewSpec( map, Source.fromURL(reduceUrl).mkString )
+        ).getOrElse(
+            ViewSpec( map )
+        )
     }
+
+    /**
+     * Loads a view from jar resource files. This looks for a file named
+     * map.js and one named reduce.js (not required).
+     */
+    def fromJar ( loaderFrom: Class[_], dir: String ): ViewSpec
+        = fromJar( loaderFrom.getClassLoader, dir )
+
 }
 
 /**

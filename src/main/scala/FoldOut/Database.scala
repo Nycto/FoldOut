@@ -96,7 +96,7 @@ class Database private[foldout]
     ): Future[Design] = {
         val spec = views.foldLeft( DesignSpec() ) {
             (accum, view) => accum + (
-                view._1 -> ViewSpec.fromDir( loader.getResource( view._2 ) )
+                view._1 -> ViewSpec.fromJar( loader, view._2 )
             )
         }
         push( spec ).map( _ => design( spec ) )
