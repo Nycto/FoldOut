@@ -24,6 +24,8 @@ private[foldout] object Params extends Enumeration {
     val Stale = Value("stale")
     val Descending = Value("descending")
     val Skip = Value("skip")
+    val Group = Value("group")
+    val GroupLevel = Value("group_level")
     val Reduce = Value("reduce")
     val InclusiveEnd = Value("inclusive_end")
     val IncludeDocs = Value("include_docs")
@@ -176,6 +178,20 @@ class BulkRead private[foldout] (
     def skip ( count: Int ): BulkRead = {
         require( count >= 0 )
         withParam( Skip, count.toString )
+    }
+
+
+    /** Groups reduce results by key */
+    def group( grouped: Boolean ) : BulkRead = withParam(Group, nBool(grouped))
+
+    /** Groups reduce results by key */
+    def group: BulkRead = group(true)
+
+
+    /** Groups reduce results by key */
+    def groupLevel( level: Int ) : BulkRead = {
+        require( level > 0 )
+        withParam(GroupLevel, nInt(level))
     }
 
 

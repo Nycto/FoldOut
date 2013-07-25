@@ -43,13 +43,15 @@ class BulkReadTest extends Specification with Mockito {
             val read = new BulkRead(request, "path")
                 .key("abc123").limit(10).skip(2).desc
                 .staleOk.reduce.includeEnd.includeDocs
+                .group.groupLevel(5)
 
             exec( read ) must_== expected
 
             there was one(request).get("path", Map(
                 "key" -> "\"abc123\"", "limit" -> "10", "skip" -> "2",
                 "descending" -> "true", "stale" -> "ok", "reduce" -> "true",
-                "inclusive_end" -> "true", "include_docs" -> "true"
+                "inclusive_end" -> "true", "include_docs" -> "true",
+                "group" -> "true", "group_level" -> "5"
             ))
         }
 
