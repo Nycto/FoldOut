@@ -36,11 +36,15 @@ object RowList {
         = new RowList( totalRows, offset, rows )
 
     /** Creates a new document from a JSON object */
-    def apply ( elem: nElement ): RowList = apply(
-        elem.asObject.int("total_rows").toInt,
-        elem.asObject.int("offset").toInt,
-        elem.asObject.ary("rows")
-    )
+    def apply ( elem: nElement ): RowList = {
+        val obj = elem.asObject
+        val rows = obj.ary("rows")
+        apply(
+            obj.int_?("total_rows").map(_.toInt).getOrElse(rows.length),
+            obj.int_?("offset").map(_.toInt).getOrElse(0),
+            rows
+        )
+    }
 
     /** Creates a new document from a JSON string */
     def apply ( json: String ): RowList = apply( nParser.jsonObj(json) )

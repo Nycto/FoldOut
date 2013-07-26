@@ -8,18 +8,8 @@ class RowListTest extends Specification {
 
     "A RowList" should {
 
-        "Fail when a key is missing" in {
-            RowList("""{
-                "total_rows": 0, "offset": 0
-            }""") must throwA[Exception]
-
-            RowList("""{
-                "total_rows": 0, "rows": []
-            }""") must throwA[Exception]
-
-            RowList("""{
-                "offset": 0, "rows": []
-            }""") must throwA[Exception]
+        "Fail when a row list is missing" in {
+            RowList("""{}""") must throwA[Exception]
         }
 
         "Provide access to total rows and offset" in {
@@ -31,8 +21,15 @@ class RowListTest extends Specification {
             list.offset must_== 9
         }
 
+        "Default the total_rows and offset keys if missing" in {
+            val list = RowList("""{ "rows": [ {}, {} ] }""")
+
+            list.totalRows must_== 2
+            list.offset must_== 0
+        }
+
         "Iterate over the rows" in {
-            val list = RowList("""{ "total_rows": 3, "offset": 0, "rows": [
+            val list = RowList("""{ "rows": [
                 { "id": "1", "key": "2", "value": {} },
                 { "id": "3", "key": "4", "value": {} }
             ] }""")
