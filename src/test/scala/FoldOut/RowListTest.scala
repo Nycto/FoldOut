@@ -36,7 +36,10 @@ class RowListTest extends Specification {
 
             list.foldRight( List[String]() ) {
                 (obj, accum) => obj.toString :: accum
-            } must_== List( """Row(1, 2, {})""", """Row(3, 4, {})""" )
+            } must_== List(
+                """Row(2, Some(1), {})""",
+                """Row(4, Some(3), {})"""
+            )
         }
 
         "Provide equality comparisons" in {

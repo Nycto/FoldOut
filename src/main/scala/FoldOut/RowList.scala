@@ -7,21 +7,26 @@ import com.roundeights.scalon.{nObject, nElement, nParser}
  * A Row from a bulk read
  */
 class Row private[foldout] (
-    override val id: String,
     val key: nElement,
+    val rowID: Option[String],
     obj: nObject
 ) extends Doc(obj) {
 
     /** Constructs a row from a notation element */
     private[foldout] def this ( elem: nElement ) = this(
-        elem.asObject.str("id"),
         elem.asObject.get("key"),
+        elem.asObject.str_?("id"),
         elem.asObject.obj("value")
     )
 
     /** {@inheritDoc} */
+    override def id: String = rowID.getOrElse(
+        throw new NoSuchElementException("Row does not have an ID")
+    )
+
+    /** {@inheritDoc} */
     override def toString: String
-        = "Row(%s, %s, %s)".format(id, key.toString, obj.toString)
+        = "Row(%s, %s, %s)".format(key.toString, rowID, obj.toString)
 
 }
 
