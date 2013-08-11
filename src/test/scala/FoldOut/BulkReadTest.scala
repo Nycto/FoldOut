@@ -23,9 +23,11 @@ class BulkReadTest extends Specification with Mockito {
         = Await.result( reader.exec, Duration(5, "second") )
 
     /** Returns a mock requestor that returns the 'expected' RowList */
-    def mockRequestor(): Requestor = {
+    def mockRequestor(
+        result: Future[Option[nElement]] = mockResult
+    ): Requestor = {
         val request = mock[Requestor]
-        request.get(any[String], any[Map[String,String]]) returns mockResult
+        request.get(any[String], any[Map[String,String]]) returns result
         request
     }
 
@@ -152,6 +154,13 @@ class BulkReadTest extends Specification with Mockito {
 
             new BulkRead(mockRequestor(), "path").skip(-5)
                 .must( throwA[IllegalArgumentException] )
+        }
+
+        "Return an empty rowlist when the bulk read returns a none" in {
+            val request = mockRequestor( Future.successful(None) )
+            val read = new BulkRead(request, "path").key("abc123")
+
+            exec( read ) must_== RowList(0,0,List())
         }
 
     }

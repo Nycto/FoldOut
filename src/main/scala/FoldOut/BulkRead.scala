@@ -65,7 +65,10 @@ class BulkRead private[foldout] (
     /** Executes this request and returns a future containing the results */
     def exec: Future[RowList] = {
         val parameters = params.map { pair => ((pair._1.toString, pair._2)) }
-        execute( parameters ).map { opt => RowList( opt.get.asObject ) }
+        execute( parameters ).map { _ match {
+            case None => RowList( 0, 0, List() )
+            case Some ( rows ) => RowList( rows.asObject )
+        }}
     }
 
 
