@@ -3,6 +3,7 @@ package com.roundeights.foldout
 import com.roundeights.scalon._
 import com.roundeights.hasher.Hasher
 
+import scala.annotation.tailrec
 import java.net.URL
 import scala.io.Source
 import java.io.FileNotFoundException
@@ -57,6 +58,9 @@ object ViewSpec {
     def fromJar ( loaderFrom: Class[_], dir: String ): ViewSpec
         = fromJar( loaderFrom.getClassLoader, dir )
 
+
+    // A simple regex to match the import directives in a View
+    val importMatcher = "(?m)^( *)(?://)? *!import *(.+)$".r
 }
 
 /**
@@ -74,6 +78,25 @@ case class ViewSpec ( val map: String, val reduce: Option[String] ) {
 
     /** Generates a SHA1 hash of this spec */
     def sha1: String = Hasher( map + reduce.getOrElse("") ).sha1
+
+    /** Post processes this view to include an imported code */
+    def processImports ( resolve: (String) => String ): ViewSpec = {
+        @tailrec def process( count: Int, code: String ): String = {
+            if ( count >= 200 )
+                throw new Exception
+
+            val result = ViewSpec.importMatcher.replaceAllIn( code,
+                (matched) => matched.group(1) + resolve( matched.group(2) )
+            )
+
+            if ( result == code )
+                code
+            else
+                process( count + 1, result )
+        }
+
+        ViewSpec( process(0, map), reduce.map( process(0, _) ) )
+    }
 
 }
 

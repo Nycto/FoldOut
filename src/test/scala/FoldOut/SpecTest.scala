@@ -120,6 +120,54 @@ class SpecTest extends Specification {
 
     }
 
+    "ViewSpecs with imports" should {
+
+        "call the resolver" in {
+            val processed = ViewSpec("""function () {
+                // map
+                // !import content
+            }""", """function () {
+                // reduce
+                // !import content
+            }""").processImports( include => {
+                include must_== "content"
+                "included();"
+            })
+
+            processed must_== ViewSpec("""function () {
+                // map
+                included();
+            }""", """function () {
+                // reduce
+                included();
+            }""")
+        }
+
+        "not require a leading comment" in {
+            val processed = ViewSpec("""function () {
+                !import content
+            }""").processImports( include => {
+                include must_== "content"
+                "included();"
+            })
+
+            processed must_== ViewSpec("""function () {
+                included();
+            }""")
+        }
+
+
+        "skip imports that aren't on their own line" in {
+            val processed = ViewSpec(
+                """function () { !import content }"""
+            ).processImports( include => {
+                throw new Exception("Should not be called")
+            })
+
+            processed must_== ViewSpec("""function () { !import content }""")
+        }
+    }
+
 }
 
 
