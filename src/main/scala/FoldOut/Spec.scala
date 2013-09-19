@@ -27,6 +27,17 @@ object ViewSpec {
         new ViewSpec( obj.str("map"), obj.str_?("reduce") )
     }
 
+    /** Returns a file from a jar */
+    private def loadJarFile( loader: ClassLoader, path: String ): String = {
+        Source.fromURL(
+            Option( loader.getResource( path ) ).getOrElse(
+                throw new FileNotFoundException(
+                    "Could not find Jar resource: %s".format(path)
+                )
+            )
+        ).mkString
+    }
+
     /**
      * Loads a view from jar resource files. This looks for a file named
      * map.js and one named reduce.js (not required).
@@ -35,14 +46,7 @@ object ViewSpec {
         val trimmed = dir.dropWhile(_ == '/')
             .reverse.dropWhile(_ == '/').reverse
 
-        val mapPath = trimmed + "/map.js"
-        val map = Source.fromURL(
-            Option( loader.getResource( mapPath ) ).getOrElse(
-                throw new FileNotFoundException(
-                    "Could not find Jar resource: %s".format(mapPath)
-                )
-            )
-        ).mkString
+        val map = loadJarFile( loader, trimmed + "/map.js" )
 
         Option( loader.getResource( trimmed + "/reduce.js" ) ).map(
             reduceUrl => ViewSpec( map, Source.fromURL(reduceUrl).mkString )
@@ -97,6 +101,10 @@ case class ViewSpec ( val map: String, val reduce: Option[String] ) {
 
         ViewSpec( process(0, map), reduce.map( process(0, _) ) )
     }
+
+    /** Post processes this view to include imported code from a jar */
+    def processImports ( loader: ClassLoader ): ViewSpec
+        = processImports( ViewSpec.loadJarFile(loader, _) )
 
 }
 
