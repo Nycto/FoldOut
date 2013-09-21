@@ -156,7 +156,6 @@ class SpecTest extends Specification {
             }""")
         }
 
-
         "skip imports that aren't on their own line" in {
             val processed = ViewSpec(
                 """function () { !import content }"""
@@ -165,6 +164,32 @@ class SpecTest extends Specification {
             })
 
             processed must_== ViewSpec("""function () { !import content }""")
+        }
+
+        "allow recursion" in {
+            val processed = ViewSpec("""function () {
+                !import one
+            }""").processImports( include => {
+                if ( include == "one" )
+                    "!import two"
+                else if ( include == "two" )
+                    "included();"
+                else
+                    throw new Exception("Unexpected import file: " + include)
+            })
+
+            processed must_== ViewSpec("""function () {
+                included();
+            }""")
+        }
+
+        "prevent infinite recursion" in {
+            val spec = ViewSpec("""function () {
+                !import content
+            }""")
+
+            spec.processImports( include => "!import content" ) must
+                throwA[StackOverflowError]
         }
     }
 

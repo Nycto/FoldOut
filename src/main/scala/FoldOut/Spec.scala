@@ -115,15 +115,15 @@ case class ViewSpec ( val map: String, val reduce: Option[String] ) {
     /** Post processes this view to include an imported code */
     def processImports ( resolve: (String) => String ): ViewSpec = {
         @tailrec def process( count: Int, code: String ): String = {
-            if ( count >= 200 )
-                throw new Exception
+            if ( count >= 50 )
+                throw new StackOverflowError("Import recursion too deep")
 
             val result = ViewSpec.importMatcher.replaceAllIn( code,
                 (matched) => matched.group(1) + resolve( matched.group(2) )
             )
 
-            if ( result == code )
-                code
+            if ( ViewSpec.importMatcher.findFirstIn(result).isEmpty )
+                result
             else
                 process( count + 1, result )
         }
