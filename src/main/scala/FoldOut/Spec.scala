@@ -6,7 +6,7 @@ import com.roundeights.hasher.Hasher
 import scala.annotation.tailrec
 import java.net.URL
 import scala.io.Source
-import java.io.FileNotFoundException
+import java.io.{File, FileNotFoundException}
 
 /**
  * ViewSpec Companion
@@ -26,6 +26,35 @@ object ViewSpec {
         val obj = data.asObject
         new ViewSpec( obj.str("map"), obj.str_?("reduce") )
     }
+
+    /** Locates a file within a base path */
+    private[ViewSpec] def getContent ( base: File, path: String ) = {
+        Some( new File(base, path) )
+            .filter( _.exists )
+            .map( Source.fromFile(_).mkString )
+    }
+
+    /** Requires that a file exists */
+    private[ViewSpec] def requireContent ( base: File, path: String ) = {
+        getContent( base, path ).getOrElse {
+            throw new FileNotFoundException(
+                "Could not find file: " + new File(base, path)
+            )
+        }
+    }
+
+    /**
+     * Loads the map.js and reduce.js from a base directory
+     */
+    def fromDir( base: File ): ViewSpec = ViewSpec(
+        requireContent(base, "map.js"),
+        getContent(base, "reduce.js")
+    )
+
+    /**
+     * Loads the map.js and reduce.js from a base directory
+     */
+    def fromDir( base: String ): ViewSpec = fromDir( new File(base) )
 
     /** Returns a file from a jar */
     private def loadJarFile( loader: ClassLoader, path: String ): String = {
