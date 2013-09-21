@@ -135,6 +135,13 @@ case class ViewSpec ( val map: String, val reduce: Option[String] ) {
     def processImports ( loader: ClassLoader ): ViewSpec
         = processImports( ViewSpec.loadJarFile(loader, _) )
 
+    /** Post processes this view to include imported code from a directory */
+    def processImports ( baseDir: File ): ViewSpec
+        = processImports( ViewSpec.requireContent(baseDir, _) )
+
+    /** Post processes this view to include imported code from a directory */
+    def processImports ( baseDir: String ): ViewSpec
+        = processImports( ViewSpec.requireContent( new File(baseDir), _ ) )
 }
 
 /**
