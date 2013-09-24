@@ -118,6 +118,25 @@ class SpecTest extends Specification {
             ).sha1 must_== "a7027fe68733f10a867e004a3abb775691e55ea6"
         }
 
+        "Be mappable" in {
+            val one = ViewSpec("function(){/*1*/}")
+            val two = ViewSpec("function(){/*2*/}")
+
+            val design = DesignSpec(
+                language = "JavaScript",
+                "one" -> one, "two" -> two
+            )
+
+            val mapped = design.map( view => ViewSpec(view.map + "/* map */") )
+
+            mapped must_== DesignSpec(
+                language = "JavaScript",
+                "one" -> ViewSpec("function(){/*1*/}/* map */"),
+                "two" -> ViewSpec("function(){/*2*/}/* map */")
+            )
+
+        }
+
     }
 
     "ViewSpecs with imports" should {

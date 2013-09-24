@@ -213,6 +213,12 @@ case class DesignSpec (
     /** {@inheritDoc} */
     override def toDoc: Doc = Doc( toJson + ("_id" -> toDocKey) )
 
+    /** Generates a new spec using a callback to mutate the views */
+    def map ( callback: (ViewSpec) => ViewSpec ): DesignSpec = {
+        DesignSpec( language, views.map {
+            (pair) => pair._1 -> callback(pair._2)
+        } )
+    }
 }
 
 
