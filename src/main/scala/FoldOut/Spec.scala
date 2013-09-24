@@ -172,6 +172,26 @@ object DesignSpec {
         )
     }
 
+    /** Creates a design spec from a list of jar resource paths */
+    def fromJar (
+        loader: ClassLoader,
+        views: (String, String)*
+    ): DesignSpec = {
+        views.foldLeft( DesignSpec() ) {
+            (accum, view) => accum + (
+                view._1 -> ViewSpec.fromJar( loader, view._2 )
+            )
+        }
+    }
+
+    /** Creates a design spec from a list of jar resource paths */
+    def fromJar (
+        loaderFrom: Class[_],
+        views: (String, String)*
+    ): DesignSpec = {
+        fromJar( loaderFrom.getClassLoader, views:_* )
+    }
+
 }
 
 /**
@@ -219,6 +239,22 @@ case class DesignSpec (
             (pair) => pair._1 -> callback(pair._2)
         } )
     }
+
+    /** Post processes the views in this design to include imported code */
+    def processImports ( resolve: (String) => String ): DesignSpec
+        = map( _.processImports(resolve) )
+
+    /** Post processes the views in this design to imported code from a jar */
+    def processImports ( loader: ClassLoader ): DesignSpec
+        = map( _.processImports(loader) )
+
+    /** Post processes the views in this design to imported code from a dir */
+    def processImports ( baseDir: File ): DesignSpec
+        = map( _.processImports(baseDir) )
+
+    /** Post processes the views in this design to imported code from a dir */
+    def processImports ( baseDir: String ): DesignSpec
+        = map( _.processImports(baseDir) )
 }
 
 

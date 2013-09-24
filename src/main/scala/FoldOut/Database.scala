@@ -94,11 +94,7 @@ class Database private[foldout]
         loader: ClassLoader,
         views: (String, String)*
     ): Future[Design] = {
-        val spec = views.foldLeft( DesignSpec() ) {
-            (accum, view) => accum + (
-                view._1 -> ViewSpec.fromJar( loader, view._2 )
-            )
-        }
+        val spec = DesignSpec.fromJar( loader, views:_* )
         push( spec ).map( _ => design( spec ) )
     }
 
