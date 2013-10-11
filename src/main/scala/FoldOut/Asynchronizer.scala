@@ -34,25 +34,20 @@ private[foldout] class Asynchronizer (
     /** {@inheritDoc} */
     override def onStatusReceived(
         responseStatus: HttpResponseStatus
-    ): STATE = {
-        if ( responseStatus.getStatusCode == 404 ) {
+    ): STATE = responseStatus.getStatusCode match {
+        case 404 => {
             promise.success( None )
             STATE.ABORT
         }
-        else if ( responseStatus.getStatusCode == 409 ) {
+        case 409 => {
             promise.failure( new RevisionConflict )
             STATE.ABORT
         }
-        else if (
-            responseStatus.getStatusCode >= 300
-            || responseStatus.getStatusCode < 200
-        ) {
+        case code if code >= 300 || code < 200 => {
             promise.failure( new RequestError(responseStatus) )
             STATE.ABORT
         }
-        else {
-            STATE.CONTINUE
-        }
+        case _ => STATE.CONTINUE
     }
 
     /** {@inheritDoc} */
