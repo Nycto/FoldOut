@@ -5,7 +5,7 @@ import com.roundeights.scalon.{nElement, nParser}
 import scala.concurrent.Promise
 import scala.util.Try
 
-import com.ning.http.client.{ AsyncHandler, HttpResponseBodyPart }
+import com.ning.http.client.{ Request, AsyncHandler, HttpResponseBodyPart }
 import com.ning.http.client.{ HttpResponseStatus, HttpResponseHeaders }
 import com.ning.http.client.AsyncHandler.STATE
 
@@ -14,6 +14,7 @@ import com.ning.http.client.AsyncHandler.STATE
  * receied.
  */
 private[foldout] class Asynchronizer (
+    private val request: Request,
     private val promise: Promise[Option[nElement]]
 ) extends AsyncHandler[Unit] {
 
@@ -44,7 +45,7 @@ private[foldout] class Asynchronizer (
             STATE.ABORT
         }
         case code if code >= 300 || code < 200 => {
-            promise.failure( new RequestError(responseStatus) )
+            promise.failure( new RequestError(request, responseStatus) )
             STATE.ABORT
         }
         case _ => STATE.CONTINUE
