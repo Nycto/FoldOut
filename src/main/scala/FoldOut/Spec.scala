@@ -56,10 +56,20 @@ object ViewSpec {
      */
     def fromDir( base: String ): ViewSpec = fromDir( new File(base) )
 
+    /** Joins two file paths */
+    private def join( left: String, right: String ) = {
+        val base = if ( left.endsWith("/") ) left else left + "/"
+        base + right.dropWhile(_ == '/')
+    }
+
     /** Returns a file from a jar */
-    private def loadJarFile( loader: ClassLoader, path: String ): String = {
+    private def loadJarFile(
+        loader: ClassLoader,
+        baseDir: String,
+        path: String
+    ): String = {
         Source.fromURL(
-            Option( loader.getResource( path ) ).getOrElse(
+            Option( loader.getResource( join(baseDir, path) ) ).getOrElse(
                 throw new FileNotFoundException(
                     "Could not find Jar resource: %s".format(path)
                 )
@@ -73,11 +83,10 @@ object ViewSpec {
      */
     def fromJar ( loader: ClassLoader, dir: String ): ViewSpec = {
         val trimmed = dir.dropWhile(_ == '/')
-            .reverse.dropWhile(_ == '/').reverse
 
-        val map = loadJarFile( loader, trimmed + "/map.js" )
+        val map = loadJarFile( loader, trimmed, "map.js" )
 
-        Option( loader.getResource( trimmed + "/reduce.js" ) ).map(
+        Option( loader.getResource( join(trimmed, "reduce.js") ) ).map(
             reduceUrl => ViewSpec( map, Source.fromURL(reduceUrl).mkString )
         ).getOrElse(
             ViewSpec( map )
@@ -132,8 +141,8 @@ case class ViewSpec ( val map: String, val reduce: Option[String] ) {
     }
 
     /** Post processes this view to include imported code from a jar */
-    def processImports ( loader: ClassLoader ): ViewSpec
-        = processImports( ViewSpec.loadJarFile(loader, _) )
+    def processImports ( loader: ClassLoader, dir: String ): ViewSpec
+        = processImports( ViewSpec.loadJarFile(loader, dir, _) )
 
     /** Post processes this view to include imported code from a directory */
     def processImports ( baseDir: File ): ViewSpec
@@ -245,8 +254,8 @@ case class DesignSpec (
         = map( _.processImports(resolve) )
 
     /** Post processes the views in this design to imported code from a jar */
-    def processImports ( loader: ClassLoader ): DesignSpec
-        = map( _.processImports(loader) )
+    def processImports ( loader: ClassLoader, dir: String ): DesignSpec
+        = map( _.processImports(loader, dir) )
 
     /** Post processes the views in this design to imported code from a dir */
     def processImports ( baseDir: File ): DesignSpec
