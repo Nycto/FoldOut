@@ -95,12 +95,9 @@ private[foldout] class Requestor (
     /** Executes the given request and returns a promise */
     def execute ( request: Request ): Future[Option[nElement]] = {
         log( request, {
-            val promise = Promise[Option[nElement]]
-            client.executeRequest(
-                request,
-                new Asynchronizer( request, promise )
-            )
-            promise.future
+            val async = new Asynchronizer( request )
+            client.executeRequest( request, async )
+            async.future
         } )
     }
 

@@ -5,21 +5,24 @@ import com.ning.http.client.{Request, HttpResponseStatus}
 /**
  * Thrown when an update generates a conflict
  */
-class RevisionConflict extends Exception
+case class RevisionConflict() extends Exception
 
 /**
  * An error during a request
  */
-class RequestError ( message: String ) extends Exception ( message ) {
+case class RequestError ( message: String ) extends Exception ( message ) {
 
-    /** An alternate constructor for building from a Response */
-    def this ( request: Request, status: HttpResponseStatus ) = {
-        this("CouchDB Request Error - %d: %s while fetching %s".format(
-            status.getStatusCode,
-            status.getStatusText,
-            request.getUrl
-        ))
-    }
+    /** Constructs an error for a given request */
+    def this ( request: Request, message: String ) = this(
+        "CouchDB Request Error - %s while fetching %s".format(
+            message, request.getUrl
+        )
+    )
+
+    /** Constructs an error for the given request/response pair */
+    def this ( request: Request, status: HttpResponseStatus ) = this(
+        request, "%d: %s".format( status.getStatusCode, status.getStatusText )
+    )
 
 }
 
