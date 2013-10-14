@@ -144,6 +144,10 @@ case class ViewSpec ( val map: String, val reduce: Option[String] ) {
     def processImports ( loader: ClassLoader, dir: String ): ViewSpec
         = processImports( ViewSpec.loadJarFile(loader, dir, _) )
 
+    /** Post processes this view to include imported code from a jar */
+    def processImports ( clazz: Class[_], dir: String ): ViewSpec
+        = processImports( clazz.getClassLoader, dir )
+
     /** Post processes this view to include imported code from a directory */
     def processImports ( baseDir: File ): ViewSpec
         = processImports( ViewSpec.requireContent(baseDir, _) )
@@ -256,6 +260,10 @@ case class DesignSpec (
     /** Post processes the views in this design to imported code from a jar */
     def processImports ( loader: ClassLoader, dir: String ): DesignSpec
         = map( _.processImports(loader, dir) )
+
+    /** Post processes the views in this design to imported code from a jar */
+    def processImports ( clazz: Class[_], dir: String ): DesignSpec
+        = map( _.processImports(clazz, dir) )
 
     /** Post processes the views in this design to imported code from a dir */
     def processImports ( baseDir: File ): DesignSpec
