@@ -27,7 +27,6 @@ class Row private[foldout] (
     /** {@inheritDoc} */
     override def toString: String
         = "Row(%s, %s, %s)".format(key.toString, rowID, obj.toString)
-
 }
 
 
@@ -62,7 +61,7 @@ class RowList private[foldout](
     val totalRows: Int,
     val offset: Int,
     private val rows: Seq[nElement]
-) extends Seq[Row] with Equals {
+) extends Seq[Row] with Equals with nElement.ToJson {
 
     /** {@inheritDoc} */
     override def apply ( idx: Int ): Row = new Row( rows.apply(idx) )
@@ -109,6 +108,9 @@ class RowList private[foldout](
         rows.map( _.toString ).mkString(", ")
     )
 
+    /** {@inheritDoc} */
+    override def toJson
+        = nObject( "total" -> totalRows, "offset" -> offset, "rows" -> rows )
 }
 
 
