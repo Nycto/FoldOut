@@ -22,10 +22,15 @@ object Doc {
  * @param obj The underlying notation object that contains the data for
  *      this document
  */
-class Doc ( val obj: nObject ) extends nObject.Interface[Doc] with Equals {
+class Doc (
+    val obj: nObject
+) extends nObject.Interface[Doc] with Equals with nElement.ToJson {
 
     /** Returns this document as JSON */
     def json: String = obj.json
+
+    /** {@inheritDoc} */
+    override def toJson = obj
 
     /** {@inheritDoc} */
     override protected def build ( o: nObject ): Doc = new Doc(o)
