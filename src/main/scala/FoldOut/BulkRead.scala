@@ -3,6 +3,7 @@ package com.roundeights.foldout
 import com.roundeights.scalon._
 
 import scala.concurrent.{Future, ExecutionContext}
+import scala.util.{Success, Failure}
 
 /**
  * The list of parameters that BulkRead operations support
@@ -71,6 +72,11 @@ class BulkRead private[foldout] (
         }}
     }
 
+    /** Executes this query and dumps the formatted results to stdout */
+    def dump: Unit = exec.onComplete {
+        case Failure(err) => println(err)
+        case Success(rows) => println( rows.toJson.pretty )
+    }
 
     /** A helper that adds the given param and returns a new BulkRead */
     private def withParam ( param: Param, value: String ): BulkRead = {
