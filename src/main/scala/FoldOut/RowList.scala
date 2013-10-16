@@ -27,6 +27,10 @@ class Row private[foldout] (
     /** {@inheritDoc} */
     override def toString: String
         = "Row(%s, %s, %s)".format(key.toString, rowID, obj.toString)
+
+    /** {@inheritDoc} */
+    override def toJson
+        = nObject( "key" -> key, "id" -> rowID, "value" -> super.toJson )
 }
 
 
