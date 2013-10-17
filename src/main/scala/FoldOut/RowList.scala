@@ -114,7 +114,7 @@ class RowList private[foldout](
 
     /** {@inheritDoc} */
     override def toJson
-        = nObject( "total" -> totalRows, "offset" -> offset, "rows" -> rows )
+        = nObject("total" -> totalRows, "offset" -> offset, "rows" -> iterator)
 }
 
 

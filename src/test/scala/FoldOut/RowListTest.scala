@@ -63,9 +63,11 @@ class RowListTest extends Specification {
         }
 
         "Convert to json" in {
-            RowList(5, 9, List( nObject(), nObject() )).toJson must_== nObject(
+            RowList(5, 9, List(
+                nObject("key" -> 123, "value" -> nObject())
+            )).toJson must_== nObject(
                 "total" -> 5, "offset" -> 9,
-                "rows" -> nList( nObject(), nObject() )
+                "rows" -> nList( nObject("key" -> 123, "value" -> nObject()) )
             )
         }
 
