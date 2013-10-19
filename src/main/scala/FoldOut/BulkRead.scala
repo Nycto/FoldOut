@@ -56,10 +56,15 @@ class BulkRead private[foldout] (
 
     import Params._
 
+    /** Converts the params map into a String/String map */
+    private def urlParams = params.map { pair => ((pair._1.toString, pair._2)) }
+
+    /** {@inheritDoc} */
+    override def toString = "BulkRead(%s)".format( execute.describe(urlParams) )
+
     /** Executes this request and returns a future containing the results */
     def exec: Future[RowList] = {
-        val parameters = params.map { pair => ((pair._1.toString, pair._2)) }
-        execute( parameters ).map { _ match {
+        execute( urlParams ).map { _ match {
             case None => RowList( 0, 0, List() )
             case Some ( rows ) => RowList( rows.asObject )
         }}

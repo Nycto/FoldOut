@@ -62,6 +62,9 @@ object Requestor {
 
         /** Executes this preset request */
         def apply ( params: Map[String, String] ): Future[Option[nElement]]
+
+        /** Returns a string description of this preset request */
+        def describe ( params: Map[String, String] ): String
     }
 }
 
@@ -120,6 +123,8 @@ private[foldout] class Requestor (
 
     /** Builds a preset request for a GET */
     def presetGet( key: String ) = new Requestor.Preset {
+        override def describe ( params: Map[String, String] )
+            = "GET " + builder.buildUrl( Some(key), params )
         override def apply ( params: Map[String, String] ) = get(key, params)
     }
 
@@ -153,6 +158,8 @@ private[foldout] class Requestor (
 
     /** Builds a preset request for a POST */
     def presetPost( key: String, doc: nElement ) = new Requestor.Preset {
+        override def describe ( params: Map[String, String] )
+            = "POST " + builder.buildUrl( Some(key), params )
         override def apply ( params: Map[String, String] )
             = post(key, doc, params)
     }

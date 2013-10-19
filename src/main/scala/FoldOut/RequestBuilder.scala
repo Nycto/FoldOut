@@ -20,6 +20,10 @@ private[foldout] class RequestBuilder (
     def withBasePath( basePath: String ): RequestBuilder
         = new RequestBuilder( url.withBasePath(basePath), auth )
 
+    /** Returns the URL for a given key and params */
+    def buildUrl ( key: Option[String], params: Map[String, String] ): String
+        = url.url(key, params)
+
     /** Returns a prefilled request builder */
     private def build(
         method: String,
@@ -28,7 +32,7 @@ private[foldout] class RequestBuilder (
         body: Option[nElement] = None
     ): Request = {
         val builder = new AsyncRequestBuilder( method )
-            .setUrl( url.url( key, params) )
+            .setUrl( buildUrl(key, params) )
             .addHeader( "Content-Type", "application/json;charset=utf-8" )
 
         // Add in the authorization header
