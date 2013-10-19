@@ -80,7 +80,7 @@ class Database private[foldout]
         = post( doc.toDoc )
 
     /** Returns all the documents in a database */
-    def allDocs: BulkRead = new BulkRead( requestor, "_all_docs" )
+    def allDocs: BulkRead = new BulkRead( requestor.presetGet("_all_docs") )
 
     /** Returns access to the given design */
     def design ( name: String ): Design
@@ -154,9 +154,8 @@ class Database private[foldout]
         = requestor.delete("/").map { (v) => () }
 
     /** Runs a temporary view */
-    def tempView ( view: ViewSpec ): BulkRead = new BulkRead(
-        (params) => requestor.post("_temp_view", view.toJson, params)
-    )
+    def tempView ( view: ViewSpec ): BulkRead
+        = new BulkRead( requestor.presetPost("_temp_view", view.toJson) )
 
 }
 

@@ -54,6 +54,17 @@ private class RequestLogger
 
 }
 
+/** @see Requestor */
+object Requestor {
+
+    /** A requestor that is preconfigured to execute a request */
+    trait Preset {
+
+        /** Executes this preset request */
+        def apply ( params: Map[String, String] ): Future[Option[nElement]]
+    }
+}
+
 /**
  * The internal interface for making raw requests to the CouchDB server
  */
@@ -62,9 +73,6 @@ private[foldout] class Requestor (
     private val client: AsyncHttpClient,
     private val log: RequestLogger
 ) {
-
-    /** Returns the base path of this Requestor */
-    def rootPath = builder.rootPath.getOrElse("/")
 
     /** Alternate constructor that puts together an async client */
     def this (
@@ -84,6 +92,9 @@ private[foldout] class Requestor (
         ),
         new RequestLogger( logger )
     )
+
+    /** Returns the base path of this Requestor */
+    def rootPath = builder.rootPath.getOrElse("/")
 
     /** Constructs a new Requestor that adds a base path to requests */
     def withBasePath( basePath: String ): Requestor
@@ -106,6 +117,11 @@ private[foldout] class Requestor (
         key: String, params: Map[String, String] = Map()
     ): Future[Option[nElement]]
         = execute( builder.get(key, params) )
+
+    /** Builds a preset request for a GET */
+    def presetGet( key: String ) = new Requestor.Preset {
+        override def apply ( params: Map[String, String] ) = get(key, params)
+    }
 
     /** Sends a put request */
     def put( key: String ): Future[Option[nElement]]
@@ -134,6 +150,12 @@ private[foldout] class Requestor (
         params: Map[String, String]
     ): Future[Option[nElement]]
         = execute( builder.post(key, doc, params) )
+
+    /** Builds a preset request for a POST */
+    def presetPost( key: String, doc: nElement ) = new Requestor.Preset {
+        override def apply ( params: Map[String, String] )
+            = post(key, doc, params)
+    }
 
 }
 

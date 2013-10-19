@@ -12,7 +12,7 @@ class Design private[foldout]
 
     /** Returns all the documents in a database */
     def view( name: String ): BulkRead
-        = new BulkRead( requestor, "_view/%s".format(name) )
+        = new BulkRead( requestor.presetGet("_view/%s".format(name)) )
 
     /** Returns the raw specs for this design */
     def spec: Future[Option[DesignSpec]] = {

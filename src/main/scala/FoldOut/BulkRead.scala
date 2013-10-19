@@ -41,7 +41,6 @@ private[foldout] object Params extends Enumeration {
         case EndDocID => Set(Key, Keys, EndKey)
         case _ => Set()
     }
-
 }
 
 /**
@@ -51,17 +50,11 @@ private[foldout] object Params extends Enumeration {
  * http://wiki.apache.org/couchdb/HTTP_view_API
  */
 class BulkRead private[foldout] (
-    private val execute: (Map[String,String]) => Future[Option[nElement]],
+    private val execute: Requestor.Preset,
     private val params: Map[Params.Param, String] = Map()
 )( implicit context: ExecutionContext ) {
 
     import Params._
-
-    /** Instantiates a basic bulk reader for performing GET requests */
-    def this
-        ( requestor: Requestor, docID: String )
-        ( implicit context: ExecutionContext )
-        = this( (params) => requestor.get(docID, params) )
 
     /** Executes this request and returns a future containing the results */
     def exec: Future[RowList] = {

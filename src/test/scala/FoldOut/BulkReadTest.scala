@@ -25,9 +25,9 @@ class BulkReadTest extends Specification with Mockito {
     /** Returns a mock requestor that returns the 'expected' RowList */
     def mockRequestor(
         result: Future[Option[nElement]] = mockResult
-    ): Requestor = {
-        val request = mock[Requestor]
-        request.get(any[String], any[Map[String,String]]) returns result
+    ): Requestor.Preset = {
+        val request = mock[Requestor.Preset]
+        request.apply(any[Map[String,String]]) returns result
         request
     }
 
@@ -36,20 +36,20 @@ class BulkReadTest extends Specification with Mockito {
 
         "pass an empty parameter list when nothing is specified" in {
             val request = mockRequestor()
-            exec( new BulkRead(request, "path") ) must_== expected
-            there was one(request).get("path", Map())
+            exec( new BulkRead(request) ) must_== expected
+            there was one(request).apply(Map())
         }
 
         "pass a full parameter list (Part 1)" in {
             val request = mockRequestor()
-            val read = new BulkRead(request, "path")
+            val read = new BulkRead(request)
                 .key("abc123").limit(10).skip(2).desc
                 .staleOk.reduce.includeEnd.includeDocs
                 .group.groupLevel(5)
 
             exec( read ) must_== expected
 
-            there was one(request).get("path", Map(
+            there was one(request).apply(Map(
                 "key" -> "\"abc123\"", "limit" -> "10", "skip" -> "2",
                 "descending" -> "true", "stale" -> "ok", "reduce" -> "true",
                 "inclusive_end" -> "true", "include_docs" -> "true",
@@ -59,14 +59,14 @@ class BulkReadTest extends Specification with Mockito {
 
         "pass a full parameter list (Part 2)" in {
             val request = mockRequestor()
-            val read = new BulkRead(request, "path")
+            val read = new BulkRead(request)
                 .keys("abc123", "xyz789").asc
                 .staleOk( true ).reduce( false )
                 .includeEnd( false ).includeDocs( false )
 
             exec( read ) must_== expected
 
-            there was one(request).get("path", Map(
+            there was one(request).apply(Map(
                 "keys" -> """["abc123","xyz789"]""",
                 "descending" -> "false", "stale" -> "update_after",
                 "reduce" -> "false", "inclusive_end" -> "false",
@@ -76,36 +76,36 @@ class BulkReadTest extends Specification with Mockito {
 
         "handle string list keys" in {
             val request = mockRequestor()
-            val read = new BulkRead(request, "path")
+            val read = new BulkRead(request)
                 .key("abc123", "lmnop456", "xyz789")
 
             exec( read ) must_== expected
 
-            there was one(request).get("path", Map(
+            there was one(request).apply(Map(
                 "key" -> """["abc123","lmnop456","xyz789"]"""
             ))
         }
 
         "handle nElement list keys" in {
             val request = mockRequestor()
-            val read = new BulkRead(request, "path")
+            val read = new BulkRead(request)
                 .key( nInt(123), nFloat(3.14), nObject(), nList() )
 
             exec( read ) must_== expected
 
-            there was one(request).get("path", Map(
+            there was one(request).apply(Map(
                 "key" -> """[123,3.14,{},[]]"""
             ))
         }
 
         "handle list based range keys" in {
             val request = mockRequestor()
-            val read = new BulkRead(request, "path")
+            val read = new BulkRead(request)
                 .range( List("abc", "123"), List("xyz", "789") )
 
             exec( read ) must_== expected
 
-            there was one(request).get("path", Map(
+            there was one(request).apply(Map(
                 "startkey" -> """["abc","123"]""",
                 "endkey" -> """["xyz","789"]"""
             ))
@@ -113,24 +113,24 @@ class BulkReadTest extends Specification with Mockito {
 
         "pass a key range" in {
             val request = mockRequestor()
-            val read = new BulkRead(request, "path")
+            val read = new BulkRead(request)
                 .range("abc123" -> "xyz789")
 
             exec( read ) must_== expected
 
-            there was one(request).get("path", Map(
+            there was one(request).apply(Map(
                 "startkey" -> "\"abc123\"", "endkey" -> "\"xyz789\""
             ))
         }
 
         "pass a doc ID range" in {
             val request = mockRequestor()
-            val read = new BulkRead(request, "path")
+            val read = new BulkRead(request)
                 .docIdRange("abc123" -> "xyz789")
 
             exec( read ) must_== expected
 
-            there was one(request).get("path", Map(
+            there was one(request).apply(Map(
                 "startkey_docid" -> "\"abc123\"",
                 "endkey_docid" -> "\"xyz789\""
             ))
@@ -138,27 +138,27 @@ class BulkReadTest extends Specification with Mockito {
 
         "remove conflicting keys" in {
             val request = mockRequestor()
-            val read = new BulkRead(request, "path")
+            val read = new BulkRead(request)
                 .docIdRange("abc123" -> "xyz789")
                 .range("abc123" -> "xyz789")
                 .keys("abc123", "xyz789")
                 .key("abc123")
 
             exec( read ) must_== expected
-            there was one(request).get("path", Map("key" -> "\"abc123\""))
+            there was one(request).apply(Map("key" -> "\"abc123\""))
         }
 
         "Throw errors when a value is invalid" in {
-            new BulkRead(mockRequestor(), "path").limit(-5)
+            new BulkRead(mockRequestor()).limit(-5)
                 .must( throwA[IllegalArgumentException] )
 
-            new BulkRead(mockRequestor(), "path").skip(-5)
+            new BulkRead(mockRequestor()).skip(-5)
                 .must( throwA[IllegalArgumentException] )
         }
 
         "Return an empty rowlist when the bulk read returns a none" in {
             val request = mockRequestor( Future.successful(None) )
-            val read = new BulkRead(request, "path").key("abc123")
+            val read = new BulkRead(request).key("abc123")
 
             exec( read ) must_== RowList(0,0,List())
         }
