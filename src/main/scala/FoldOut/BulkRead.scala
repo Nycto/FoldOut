@@ -62,18 +62,21 @@ class BulkRead private[foldout] (
     /** {@inheritDoc} */
     override def toString = "BulkRead(%s)".format( execute.describe(urlParams) )
 
+    /** Executes this query and dumps the formatted results to stdout */
+    def dump: Unit = {
+        execute( urlParams ).onComplete {
+            case Failure(err) => println(err)
+            case Success(None) => println( None )
+            case Success(Some(result)) => println( result.pretty )
+        }
+    }
+
     /** Executes this request and returns a future containing the results */
     def exec: Future[RowList] = {
         execute( urlParams ).map { _ match {
             case None => RowList( 0, 0, List() )
             case Some ( rows ) => RowList( rows.asObject )
         }}
-    }
-
-    /** Executes this query and dumps the formatted results to stdout */
-    def dump: Unit = exec.onComplete {
-        case Failure(err) => println(err)
-        case Success(rows) => println( rows.toJson.pretty )
     }
 
     /** A helper that adds the given param and returns a new BulkRead */
