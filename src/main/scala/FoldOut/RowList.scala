@@ -9,28 +9,31 @@ import com.roundeights.scalon.{nObject, nElement, nParser}
 class Row private[foldout] (
     val key: nElement,
     val rowID: Option[String],
-    obj: nObject
-) extends Doc(obj) {
+    val elem: nElement
+) extends nElement.ToJson {
 
     /** Constructs a row from a notation element */
     private[foldout] def this ( elem: nElement ) = this(
         elem.asObject.get("key"),
         elem.asObject.str_?("id"),
-        elem.asObject.obj("value")
+        elem.asObject.get("value")
     )
 
-    /** {@inheritDoc} */
-    override def id: String = rowID.getOrElse(
+    /** Returns the ID of this Row, if it has one */
+    def id: String = rowID.getOrElse(
         throw new NoSuchElementException("Row does not have an ID")
     )
 
+    /** Returns this row as a Doc */
+    def doc = Doc( elem.asObject )
+
     /** {@inheritDoc} */
     override def toString: String
-        = "Row(%s, %s, %s)".format(key.toString, rowID, obj.toString)
+        = "Row(%s, %s, %s)".format(key.toString, rowID, elem.toString)
 
     /** {@inheritDoc} */
     override def toJson
-        = nObject( "key" -> key, "id" -> rowID, "value" -> super.toJson )
+        = nObject( "key" -> key, "id" -> rowID, "value" -> elem )
 }
 
 
