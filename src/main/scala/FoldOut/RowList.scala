@@ -10,7 +10,7 @@ class Row private[foldout] (
     val key: nElement,
     val rowID: Option[String],
     val elem: nElement
-) extends nElement.ToJson {
+) extends nElement.ToJson with nElement.Castable {
 
     /** Constructs a row from a notation element */
     private[foldout] def this ( elem: nElement ) = this(
@@ -26,6 +26,9 @@ class Row private[foldout] (
 
     /** Returns this row as a Doc */
     def doc = Doc( elem.asObject )
+
+    /** {@inheritDoc} */
+    override def asElem = elem
 
     /** {@inheritDoc} */
     override def toString: String
