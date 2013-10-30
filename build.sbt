@@ -11,7 +11,8 @@ scalacOptions ++= Seq("-deprecation", "-feature")
 
 // Repositories in which to find dependencies
 resolvers ++= Seq(
-    "Specs Repository" at "http://oss.sonatype.org/content/repositories/releases"
+    "Specs Repository" at "http://oss.sonatype.org/content/repositories/releases",
+    "RoundEights" at "http://maven.spikemark.net/roundeights"
 )
 
 // Application dependencies
