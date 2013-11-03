@@ -15,6 +15,10 @@ resolvers ++= Seq(
     "RoundEights" at "http://maven.spikemark.net/roundeights"
 )
 
+publishTo := Some("Spikemark" at "https://spikemark.herokuapp.com/maven/roundeights")
+
+credentials += Credentials(Path.userHome / ".ivy2" / ".credentials")
+
 // Application dependencies
 libraryDependencies ++= Seq(
     "com.roundeights" %% "scalon" % "0.1",
