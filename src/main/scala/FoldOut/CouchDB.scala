@@ -51,6 +51,13 @@ class CouchDB (
     logger: Logger = LoggerFactory.getLogger( classOf[CouchDB] )
 )( implicit context: ExecutionContext ) {
 
+    /** {@inheritDoc} */
+    override def toString = {
+        "CouchDB(%s@%s:%d?ssl=%s&timeout=%d&maxconn=%d)".format(
+            auth, host, port, ssl, timeout, maxConnections
+        )
+    }
+
     /** The internal interface for making requests to CouchDB */
     private val requestor = new Requestor(
         new UrlBuilder( host, port, ssl ),
