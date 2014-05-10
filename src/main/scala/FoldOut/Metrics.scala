@@ -54,12 +54,18 @@ object Metrics {
     }
 
     /** Builds a metrics object that reports events and deltas */
-    def apply( reporter: (String, Long) => Unit ): Metrics = new Metrics {
+    def apply(
+        namespace: (String) => String,
+        event: (String) => Unit,
+        timer: (String, Long) => Unit
+    ): Metrics = new Metrics {
         override def start = {
+            event( namespace("request") )
+
             val started = System.nanoTime
 
             def report(label: String): Unit
-                = reporter(label, System.nanoTime - started)
+                = timer( namespace(label), System.nanoTime - started)
 
             new Metrics.Timer {
                 override def success = report("success")
@@ -71,6 +77,13 @@ object Metrics {
             }
         }
     }
+
+    /** Builds a metrics object that reports events and deltas */
+    def apply(
+        event: (String) => Unit,
+        timer: (String, Long) => Unit
+    ): Metrics = apply( name => name, event, timer )
+
 }
 
 /**
