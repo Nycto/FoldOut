@@ -2,7 +2,7 @@ package com.roundeights.foldout
 
 import com.roundeights.scalon.{nElement, nParser, nException}
 
-import java.util.concurrent.atomic.AtomicReference
+import java.util.concurrent.atomic.{AtomicReference, AtomicBoolean}
 import scala.concurrent.Promise
 import scala.util.Try
 
@@ -19,11 +19,18 @@ import com.ning.http.client.AsyncHandler.STATE
  * using an actor.
  */
 private[foldout] class Asynchronizer (
-    private val request: Request
+    private val request: Request,
+    private val metrics: Metrics = new Metrics.Void
 ) extends AsyncHandler[Unit] {
 
+    /** The timer for tracking metrics for this specific request */
+    private val timer = metrics.start
+
+    /** Indicates whether any data has been received */
+    private val dataReceived = new AtomicBoolean(false)
+
     /** The promise that will contain the output of this request */
-    private val promise = Promise[Option[nElement]]
+    private val promise = timer( Promise[Option[nElement]] )
 
     /** The future for accessing the result of this request */
     val future = promise.future
@@ -41,6 +48,9 @@ private[foldout] class Asynchronizer (
     override def onBodyPartReceived(
         bodyPart: HttpResponseBodyPart
     ): STATE = {
+        if ( dataReceived.compareAndSet(false, true) ) {
+            timer.dataReceived
+        }
         body.append( new String(bodyPart.getBodyPartBytes, "UTF-8") )
         STATE.CONTINUE
     }
@@ -50,11 +60,11 @@ private[foldout] class Asynchronizer (
         responseStatus: HttpResponseStatus
     ): STATE = responseStatus.getStatusCode match {
         case 404 => {
-            promise.success( None )
+            promise.notFound( None )
             STATE.ABORT
         }
         case 409 => {
-            promise.failure( new RevisionConflict )
+            promise.conflict( new RevisionConflict )
             STATE.ABORT
         }
         case code if code >= 300 || code < 200 => {
@@ -69,22 +79,25 @@ private[foldout] class Asynchronizer (
         = STATE.CONTINUE
 
     /** {@inheritDoc} */
-    override def onCompleted(): Unit = status.get match {
-        case None => promise.complete( Try {
-            Some( nParser.json(body.toString) )
-        } )
-        case Some(status) => {
-            try {
-                val json = nParser.jsonObj(body.toString)
-                promise.failure( new RequestError( request,
-                    "%s: %s".format( json.str("error"), json.str("reason") )
-                ) )
-            }
-            catch {
-                // If parsing the JSON fails, send a general request failure
-                case _: nException
-                    => promise.failure( new RequestError( request, status ) )
-                case err: Exception => promise.failure(err)
+    override def onCompleted(): Unit = {
+        timer.bodyComplete
+        status.get match {
+            case None => promise.complete( Try {
+                Some( nParser.json(body.toString) )
+            } )
+            case Some(status) => {
+                try {
+                    val json = nParser.jsonObj(body.toString)
+                    promise.failure( new RequestError( request,
+                        "%s: %s".format(json.str("error"), json.str("reason"))
+                    ) )
+                }
+                catch {
+                    // If parsing the JSON fails, send a general request failure
+                    case _: nException
+                        => promise.failure(new RequestError(request, status))
+                    case err: Exception => promise.failure(err)
+                }
             }
         }
     }

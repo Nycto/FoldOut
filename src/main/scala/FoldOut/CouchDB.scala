@@ -16,9 +16,10 @@ object CouchDB {
         ssl: Boolean = true,
         auth: Option[Auth] = None,
         timeout: Int = 5000,
-        maxConnections: Int = 10
+        maxConnections: Int = 10,
+        metrics: Metrics = new Metrics.Void
     )( implicit context: ExecutionContext )
-        = new CouchDB( host, port, ssl, auth, timeout, maxConnections )
+        = new CouchDB( host, port, ssl, auth, timeout, maxConnections, metrics )
 
     /** Constructs a new CouchDB connection pool to cloudant */
     def cloudant (
@@ -26,13 +27,14 @@ object CouchDB {
         password: String,
         db: Option[String] = None,
         timeout: Int = 5000,
-        maxConnections: Int = 10
+        maxConnections: Int = 10,
+        metrics: Metrics = new Metrics.Void
     )( implicit context: ExecutionContext ) = {
         new CouchDB(
             "%s.cloudant.com".format( db.getOrElse(username) ),
             443, true,
             Some(Auth(username, password)),
-            timeout, maxConnections
+            timeout, maxConnections, metrics
         )
     }
 
@@ -48,6 +50,7 @@ class CouchDB (
     auth: Option[Auth] = None,
     timeout: Int = 5000,
     maxConnections: Int = 10,
+    metrics: Metrics = new Metrics.Void,
     logger: Logger = LoggerFactory.getLogger( classOf[CouchDB] )
 )( implicit context: ExecutionContext ) {
 
@@ -61,7 +64,7 @@ class CouchDB (
     /** The internal interface for making requests to CouchDB */
     private val requestor = new Requestor(
         new UrlBuilder( host, port, ssl ),
-        auth, timeout, maxConnections, logger
+        auth, timeout, maxConnections, metrics, logger
     )
 
     /** Sends a message to close the connection down */

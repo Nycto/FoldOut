@@ -74,6 +74,7 @@ object Requestor {
 private[foldout] class Requestor (
     private val builder: RequestBuilder,
     private val client: AsyncHttpClient,
+    private val metrics: Metrics,
     private val log: RequestLogger
 ) {
 
@@ -81,7 +82,7 @@ private[foldout] class Requestor (
     def this (
         url: UrlBuilder, auth: Option[Auth],
         timeout: Int, maxConnections: Int,
-        logger: Logger
+        metrics: Metrics, logger: Logger
     )( implicit context: ExecutionContext ) = this(
         new RequestBuilder( url, auth ),
         new AsyncHttpClient(
@@ -93,6 +94,7 @@ private[foldout] class Requestor (
                 .setMaximumConnectionsPerHost( maxConnections )
                 .build()
         ),
+        metrics,
         new RequestLogger( logger )
     )
 
@@ -101,7 +103,7 @@ private[foldout] class Requestor (
 
     /** Constructs a new Requestor that adds a base path to requests */
     def withBasePath( basePath: String ): Requestor
-        = new Requestor( builder.withBasePath(basePath), client, log )
+        = new Requestor( builder.withBasePath(basePath), client, metrics, log )
 
     /** Sends a message to close the connection down */
     def close: Unit = client.close
@@ -109,7 +111,7 @@ private[foldout] class Requestor (
     /** Executes the given request and returns a promise */
     def execute ( request: Request ): Future[Option[nElement]] = {
         log( request, {
-            val async = new Asynchronizer( request )
+            val async = new Asynchronizer( request, metrics )
             client.executeRequest( request, async )
             async.future
         } )

@@ -115,6 +115,93 @@ class AsynchronizerTest extends Specification with Mockito {
         }
     }
 
+    "An Asynchronizer tracking metrics" should {
+
+        class VoidTimer extends Metrics.Timer {
+            override def success = {}
+            override def failed = {}
+            override def notFound = {}
+            override def conflict = {}
+            override def dataReceived = {}
+            override def bodyComplete = {}
+        }
+
+        /** Builds a mock timer and an async instance that uses it */
+        def mockAsynchronizer = {
+            val timer = spy( new VoidTimer )
+            val metrics = mock[Metrics]
+            metrics.start returns timer
+            (timer, new Asynchronizer(request, metrics))
+        }
+
+        "Call dataRecieved, bodyComplete and success" in {
+            val (timer, async) = mockAsynchronizer
+
+            async.onStatusReceived(status(200))
+            async.onBodyPartReceived(body("{}"))
+            async.onCompleted
+
+            await( async.future )
+            there was one(timer).dataReceived
+            there was one(timer).bodyComplete
+            there was one(timer).success
+        }
+
+        "Only call dataReceived once" in {
+            val (timer, async) = mockAsynchronizer
+
+            async.onStatusReceived(status(200))
+            async.onBodyPartReceived(body("{"))
+            async.onBodyPartReceived(body(""" "key": "value" """))
+            async.onBodyPartReceived(body("}"))
+            async.onCompleted
+
+            await( async.future )
+            there was one(timer).dataReceived
+        }
+
+        "Call notFound for 404s" in {
+            val (timer, async) = mockAsynchronizer
+            async.onStatusReceived(status(404))
+            await( async.future )
+            there was one(timer).notFound
+        }
+
+        "Call conflict for 409s" in {
+            val (timer, async) = mockAsynchronizer
+            async.onStatusReceived(status(409))
+            await( async.future.failed )
+            there was one(timer).conflict
+        }
+
+        "Call dataReceived, bodyComplete and failed for errors" in {
+            val (timer, async) = mockAsynchronizer
+
+            async.onStatusReceived(status(500))
+            async.onBodyPartReceived(body("""{ "error":  "CODE", """))
+            async.onBodyPartReceived(body("""  "reason": "MESSAGE" }"""))
+            async.onCompleted
+
+            await( async.future.failed )
+            there was one(timer).dataReceived
+            there was one(timer).bodyComplete
+            there was one(timer).failed
+        }
+
+        "Call dataReceived, bodyComplete and failed for bad json" in {
+            val (timer, async) = mockAsynchronizer
+
+            async.onStatusReceived(status(200))
+            async.onBodyPartReceived(body("}"))
+            async.onCompleted
+
+            await( async.future.failed )
+            there was one(timer).dataReceived
+            there was one(timer).bodyComplete
+            there was one(timer).failed
+        }
+    }
+
 }
 
 
