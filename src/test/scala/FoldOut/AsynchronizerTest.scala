@@ -117,18 +117,9 @@ class AsynchronizerTest extends Specification with Mockito {
 
     "An Asynchronizer tracking metrics" should {
 
-        class VoidTimer extends Metrics.Timer {
-            override def success = {}
-            override def failed = {}
-            override def notFound = {}
-            override def conflict = {}
-            override def dataReceived = {}
-            override def bodyComplete = {}
-        }
-
         /** Builds a mock timer and an async instance that uses it */
         def mockAsynchronizer = {
-            val timer = spy( new VoidTimer )
+            val timer = mock[Metrics.Timer]
             val metrics = mock[Metrics]
             metrics.start returns timer
             (timer, new Asynchronizer(request, metrics))

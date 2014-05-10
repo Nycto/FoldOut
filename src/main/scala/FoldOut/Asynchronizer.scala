@@ -4,7 +4,7 @@ import com.roundeights.scalon.{nElement, nParser, nException}
 
 import java.util.concurrent.atomic.{AtomicReference, AtomicBoolean}
 import scala.concurrent.Promise
-import scala.util.Try
+import scala.util.{Try, Success, Failure}
 
 import com.ning.http.client.{ Request, AsyncHandler, HttpResponseBodyPart }
 import com.ning.http.client.{ HttpResponseStatus, HttpResponseHeaders }
@@ -30,10 +30,10 @@ private[foldout] class Asynchronizer (
     private val dataReceived = new AtomicBoolean(false)
 
     /** The promise that will contain the output of this request */
-    private val promise = timer( Promise[Option[nElement]] )
+    private val result = new Result
 
     /** The future for accessing the result of this request */
-    val future = promise.future
+    val future = result.future
 
     /** The error status, if one was encountered */
     private val status = new AtomicReference[Option[HttpResponseStatus]](None)
@@ -41,8 +41,48 @@ private[foldout] class Asynchronizer (
     /** Collects the body of the request as it is received */
     private val body = new StringBuilder()
 
+    /** Manages the completion of this request */
+    class Result {
+
+        /** The promise to complete */
+        private val promise = Promise[Option[nElement]]
+
+        /** The future associated with this promise */
+        val future = promise.future
+
+        /** Fulfills a promise */
+        def success( value: Option[nElement] ): Unit = {
+            timer.success
+            promise.success(value)
+        }
+
+        /** Fulfills a promise and marks the timer as 'notFound' */
+        def notFound: Unit = {
+            timer.notFound
+            promise.success( None )
+        }
+
+        /** Fulfills a promise with an exception */
+        def conflict: Unit = {
+            timer.conflict
+            promise.failure( new RevisionConflict )
+        }
+
+        /** Fulfills a promise with an exception */
+        def failure( err: Throwable ): Unit = {
+            timer.failed
+            promise.failure(err)
+        }
+
+        /** Fulfills a promise with an exception */
+        def complete( result: Try[Option[nElement]] ): Unit = result match {
+            case Success(value) => success(value)
+            case Failure(err) => failure(err)
+        }
+    }
+
     /** {@inheritDoc} */
-    override def onThrowable( t: Throwable ): Unit = promise.failure(t)
+    override def onThrowable( t: Throwable ): Unit = result.failure(t)
 
     /** {@inheritDoc} */
     override def onBodyPartReceived(
@@ -60,11 +100,11 @@ private[foldout] class Asynchronizer (
         responseStatus: HttpResponseStatus
     ): STATE = responseStatus.getStatusCode match {
         case 404 => {
-            promise.notFound( None )
+            result.notFound
             STATE.ABORT
         }
         case 409 => {
-            promise.conflict( new RevisionConflict )
+            result.conflict
             STATE.ABORT
         }
         case code if code >= 300 || code < 200 => {
@@ -82,21 +122,21 @@ private[foldout] class Asynchronizer (
     override def onCompleted(): Unit = {
         timer.bodyComplete
         status.get match {
-            case None => promise.complete( Try {
+            case None => result.complete( Try {
                 Some( nParser.json(body.toString) )
             } )
             case Some(status) => {
                 try {
                     val json = nParser.jsonObj(body.toString)
-                    promise.failure( new RequestError( request,
+                    result.failure( new RequestError( request,
                         "%s: %s".format(json.str("error"), json.str("reason"))
                     ) )
                 }
                 catch {
                     // If parsing the JSON fails, send a general request failure
                     case _: nException
-                        => promise.failure(new RequestError(request, status))
-                    case err: Exception => promise.failure(err)
+                        => result.failure(new RequestError(request, status))
+                    case err: Exception => result.failure(err)
                 }
             }
         }
