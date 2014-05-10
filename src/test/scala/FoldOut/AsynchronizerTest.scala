@@ -191,6 +191,20 @@ class AsynchronizerTest extends Specification with Mockito {
             there was one(timer).bodyComplete
             there was one(timer).failed
         }
+
+        "Report the event time in nanoseconds" in {
+            val async = new Asynchronizer(request, Metrics((label, delta) => {
+                delta must be_>(0L)
+                label must beOneOf("data_received", "body_complete", "success")
+            }))
+
+            async.onStatusReceived(status(200))
+            async.onBodyPartReceived(body("{}"))
+            async.onCompleted
+
+            await( async.future )
+            ok
+        }
     }
 
 }

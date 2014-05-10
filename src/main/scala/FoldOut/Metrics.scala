@@ -52,6 +52,25 @@ object Metrics {
             override def bodyComplete = {}
         }
     }
+
+    /** Builds a metrics object that reports events and deltas */
+    def apply( reporter: (String, Long) => Unit ): Metrics = new Metrics {
+        override def start = {
+            val started = System.nanoTime
+
+            def report(label: String): Unit
+                = reporter(label, System.nanoTime - started)
+
+            new Metrics.Timer {
+                override def success = report("success")
+                override def failed = report("failed")
+                override def notFound = report("not_found")
+                override def conflict = report("conflict")
+                override def dataReceived = report("data_received")
+                override def bodyComplete = report("body_complete")
+            }
+        }
+    }
 }
 
 /**
