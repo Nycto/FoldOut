@@ -24,8 +24,8 @@ libraryDependencies ++= Seq(
     "com.roundeights" %% "scalon" % "0.1",
     "com.roundeights" %% "hasher" % "1.0.0",
     "com.ning" % "async-http-client" % "1.8.8",
-    "org.slf4j" % "slf4j-simple" % "1.7.2",
-    "commons-codec" % "commons-codec" % "1.7",
-    "org.specs2" %% "specs2" % "2.3.4" % "test"
+    "org.slf4j" % "slf4j-simple" % "1.7.7",
+    "commons-codec" % "commons-codec" % "1.9",
+    "org.specs2" %% "specs2" % "2.3.11" % "test"
 )
 
