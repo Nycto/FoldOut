@@ -3,7 +3,7 @@ package com.roundeights.foldout
 import com.roundeights.scalon.{nElement, nParser, nException}
 
 import java.util.concurrent.atomic.{AtomicReference, AtomicBoolean}
-import scala.concurrent.Promise
+import scala.concurrent.{Promise, ExecutionException}
 import scala.util.{Try, Success, Failure}
 
 import com.ning.http.client.{ Request, AsyncHandler, HttpResponseBodyPart }
@@ -71,7 +71,17 @@ private[foldout] class Asynchronizer (
         /** Fulfills a promise with an exception */
         def failure( err: Throwable ): Unit = {
             timer.failed
-            promise.failure(err)
+            promise.failure(err match {
+                // The scala Promise lib tries to do this too, but doesn't
+                // do a great job of maintaining the original messaging
+                case _: Error => {
+                    val error = new ExecutionException(
+                        err.getClass.getName + ": " + err.getMessage, err )
+                    error.setStackTrace( err.getStackTrace )
+                    error
+                }
+                case _: Throwable => err
+            })
         }
 
         /** Fulfills a promise with an exception */
