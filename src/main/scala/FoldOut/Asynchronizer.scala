@@ -65,7 +65,7 @@ private[foldout] class Asynchronizer (
         /** Fulfills a promise with an exception */
         def conflict: Unit = {
             timer.conflict
-            promise.failure( new RevisionConflict )
+            promise.failure( new RevisionConflict( request.getUrl ) )
         }
 
         /** Fulfills a promise with an exception */

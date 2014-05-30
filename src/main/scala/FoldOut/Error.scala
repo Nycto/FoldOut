@@ -5,7 +5,9 @@ import com.ning.http.client.{Request, HttpResponseStatus}
 /**
  * Thrown when an update generates a conflict
  */
-case class RevisionConflict() extends Exception
+case class RevisionConflict( url: String ) extends Exception(
+    "Revision Conflict for: %s".format(url)
+)
 
 /**
  * An error during a request

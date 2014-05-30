@@ -50,7 +50,7 @@ class AsynchronizerTest extends Specification with Mockito {
         "Fail with a conflict when a 409 is received" in {
             val async = new Asynchronizer(request)
             async.onStatusReceived(status(409)) must_== STATE.ABORT
-            await( async.future.failed ) must_== new RevisionConflict
+            await( async.future.failed ) must beAnInstanceOf[RevisionConflict]
         }
 
         "Accumulate and parse content on 200" in {
