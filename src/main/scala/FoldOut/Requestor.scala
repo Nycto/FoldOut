@@ -87,11 +87,11 @@ private[foldout] class Requestor (
         new RequestBuilder( url, auth ),
         new AsyncHttpClient(
             new AsyncHttpClientConfig.Builder()
-                .setCompressionEnabled(true)
-                .setFollowRedirects(false)
-                .setAllowPoolingConnection(true)
-                .setRequestTimeoutInMs( timeout )
-                .setMaximumConnectionsPerHost( maxConnections )
+                .setMaxRedirects(3)
+                .setAllowPoolingConnections(true)
+                .setAllowPoolingSslConnections(true)
+                .setRequestTimeout( timeout )
+                .setMaxConnectionsPerHost( maxConnections )
                 .build()
         ),
         metrics,
