@@ -23,7 +23,7 @@ credentials += Credentials(Path.userHome / ".ivy2" / ".credentials")
 libraryDependencies ++= Seq(
     "com.roundeights" %% "scalon" % "0.2",
     "com.roundeights" %% "hasher" % "1.2.0",
-    "com.ning" % "async-http-client" % "1.+",
+    "com.ning" % "async-http-client" % "1.9+",
     "org.slf4j" % "slf4j-simple" % "1.+",
     "commons-codec" % "commons-codec" % "1.+",
     "org.specs2" %% "specs2" % "2.3.+" % "test"
