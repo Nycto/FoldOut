@@ -2,7 +2,7 @@ name := "FoldOut"
 
 organization := "com.roundeights"
 
-version := "0.1"
+version := "0.1.1"
 
 scalaVersion := "2.11.7"
 
