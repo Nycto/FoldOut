@@ -3,56 +3,7 @@ package com.roundeights.foldout
 import com.roundeights.scalon.nElement
 import scala.concurrent.{Promise, Future, ExecutionContext}
 import com.ning.http.client.{ AsyncHttpClientConfig, AsyncHttpClient, Request }
-import java.util.concurrent.atomic.AtomicInteger
 import org.slf4j.Logger
-
-/**
- * Internal logger for requests
- */
-private class RequestLogger
-    ( private val logger: Logger )
-    ( implicit context: ExecutionContext )
-{
-
-    /**
-     * An internal tracker for generating request IDs. These are used to
-     * associate multiple log entires with the same request
-     */
-    private val counter = new AtomicInteger( 0 )
-
-    /** Logs the given request */
-    def apply(
-        request: Request, executor: => Future[Option[nElement]]
-    ): Future[Option[nElement]] = {
-        val requestID = counter.incrementAndGet
-
-        logger.debug("R#%d %s %s".format(
-            requestID, request.getMethod, request.getUrl
-        ))
-
-        val future = executor
-
-        future.onSuccess {
-            case Some(_) => logger.debug("R#%d Doc found".format(requestID))
-            case None => logger.debug("R#%d Doc Missing".format(requestID))
-        }
-
-        future.onFailure {
-            case _: RevisionConflict
-                => logger.debug( "R#%d Revision Conflict".format(requestID) )
-            case err: Throwable => logger.error(
-                "R#%d Error: %s %s %s".format(
-                    requestID,
-                    request.getMethod, request.getUrl,
-                    err
-                )
-            )
-        }
-
-        future
-    }
-
-}
 
 /** @see Requestor */
 object Requestor {
@@ -75,7 +26,7 @@ private[foldout] class Requestor (
     private val builder: RequestBuilder,
     private val client: AsyncHttpClient,
     private val metrics: Metrics,
-    private val log: RequestLogger
+    private val intercept: Interceptor
 ) {
 
     /** Alternate constructor that puts together an async client */
@@ -95,22 +46,23 @@ private[foldout] class Requestor (
                 .build()
         ),
         metrics,
-        new RequestLogger( logger )
+        Interceptor.create( logger )
     )
 
     /** Returns the base path of this Requestor */
     def rootPath = builder.rootPath.getOrElse("/")
 
     /** Constructs a new Requestor that adds a base path to requests */
-    def withBasePath( basePath: String ): Requestor
-        = new Requestor( builder.withBasePath(basePath), client, metrics, log )
+    def withBasePath( basePath: String ): Requestor = new Requestor(
+        builder.withBasePath(basePath), client, metrics, intercept
+    )
 
     /** Sends a message to close the connection down */
     def close: Unit = client.close
 
     /** Executes the given request and returns a promise */
     def execute ( request: Request ): Future[Option[nElement]] = {
-        log( request, {
+        intercept( request, {
             val async = new Asynchronizer( request, metrics )
             client.executeRequest( request, async )
             async.future
