@@ -33,7 +33,7 @@ private[foldout] class Requestor (
     def this (
         url: UrlBuilder, auth: Option[Auth],
         timeout: Int, maxConnections: Int,
-        metrics: Metrics, logger: Logger
+        metrics: Metrics, intercept: Interceptor
     )( implicit context: ExecutionContext ) = this(
         new RequestBuilder( url, auth ),
         new AsyncHttpClient(
@@ -46,7 +46,7 @@ private[foldout] class Requestor (
                 .build()
         ),
         metrics,
-        Interceptor.create( logger )
+        intercept
     )
 
     /** Returns the base path of this Requestor */

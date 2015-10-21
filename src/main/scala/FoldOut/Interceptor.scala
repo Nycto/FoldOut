@@ -1,9 +1,12 @@
 package com.roundeights.foldout
 
 import com.roundeights.scalon.nElement
-import scala.concurrent.{Future, ExecutionContext}
+import scala.concurrent.{Future, Promise, ExecutionContext}
+import scala.concurrent.duration.Duration
 import com.ning.http.client.Request
 import java.util.concurrent.atomic.AtomicInteger
+import java.util.concurrent.TimeoutException
+import java.util.concurrent.ScheduledExecutorService
 import org.slf4j.Logger
 
 /** @see Interceptor */
@@ -11,11 +14,26 @@ private[foldout] object Interceptor {
 
     /** Creates a new preconfigured interceptor */
     def create (
-        logger: Logger
+        logger: Logger,
+        timeout: Duration,
+        scheduler: ScheduledExecutorService
     )(
         implicit context: ExecutionContext
     ): Interceptor = {
-        new RequestLogger( logger )
+        val log = new RequestLogger( logger )
+        val timer = new Timeout(timeout, scheduler)
+
+        return new Interceptor {
+            def apply(
+                request: Request, executor: => Future[Option[nElement]]
+            ): Future[Option[nElement]] = {
+                log(request, {
+                    timer(request, {
+                        executor
+                    })
+                })
+            }
+        }
     }
 }
 
@@ -27,6 +45,31 @@ private[foldout] trait Interceptor {
         request: Request, executor: => Future[Option[nElement]]
     ): Future[Option[nElement]]
 }
+
+/** Inflicts a timeout on the request */
+private[foldout] class Timeout (
+    private val timeout: Duration,
+    private val scheduler: ScheduledExecutorService
+)(
+    implicit context: ExecutionContext
+) extends Interceptor {
+
+    /** {@inheritDoc} */
+    def apply(
+        request: Request, executor: => Future[Option[nElement]]
+    ): Future[Option[nElement]] = {
+        val timer = Promise[Option[nElement]]()
+
+        scheduler.schedule(new Runnable {
+            override def run(): Unit = timer.failure(
+                new TimeoutException("Request timed out")
+            )
+        }, timeout.length, timeout.unit)
+
+        Future.firstCompletedOf(timer.future :: executor :: Nil)
+    }
+}
+
 
 /** Internal logger for requests */
 private[foldout] class RequestLogger
@@ -40,7 +83,7 @@ extends Interceptor {
      */
     private val counter = new AtomicInteger( 0 )
 
-    /** Logs the given request */
+    /** {@inheritDoc} */
     def apply(
         request: Request, executor: => Future[Option[nElement]]
     ): Future[Option[nElement]] = {
@@ -73,4 +116,5 @@ extends Interceptor {
     }
 
 }
+
 
