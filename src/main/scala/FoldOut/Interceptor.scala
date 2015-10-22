@@ -3,10 +3,11 @@ package com.roundeights.foldout
 import com.roundeights.scalon.nElement
 import scala.concurrent.{Future, Promise, ExecutionContext}
 import scala.concurrent.duration.Duration
+import scala.annotation.tailrec
 import com.ning.http.client.Request
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.TimeoutException
-import java.util.concurrent.ScheduledExecutorService
+import java.util.concurrent.{ConcurrentLinkedQueue, ScheduledExecutorService}
 import org.slf4j.Logger
 
 /** @see Interceptor */
@@ -16,22 +17,20 @@ private[foldout] object Interceptor {
     def create (
         logger: Logger,
         timeout: Duration,
-        scheduler: ScheduledExecutorService
+        scheduler: ScheduledExecutorService,
+        maxConnections: Int
     )(
         implicit context: ExecutionContext
     ): Interceptor = {
         val log = new RequestLogger( logger )
         val timer = new Timeout(timeout, scheduler)
+        val limiter = new RateLimiter(maxConnections)
 
         return new Interceptor {
             def apply(
                 request: Request, executor: => Future[Option[nElement]]
             ): Future[Option[nElement]] = {
-                log(request, {
-                    timer(request, {
-                        executor
-                    })
-                })
+                log(request, timer(request, limiter(request, executor)))
             }
         }
     }
@@ -115,6 +114,63 @@ extends Interceptor {
         future
     }
 
+}
+
+/** Throttles requests so only the specified number are active at a time */
+private[foldout] class RateLimiter
+    ( private val max: Int )
+    ( implicit context: ExecutionContext )
+extends Interceptor {
+
+    /** A list of requests to run */
+    private val queue = new ConcurrentLinkedQueue[() => Unit]
+
+    /** The number of active requests */
+    private val inflight = new AtomicInteger(0)
+
+    /** Attempts to execute the next function */
+    @tailrec private def runNext(): Unit = {
+        val active = inflight.get
+        val next = queue.peek
+
+        if ( active >= max || next == null ) {
+            return
+        }
+
+        if ( inflight.compareAndSet(active, active + 1) ) {
+            if ( queue.remove(next) ) {
+                return next()
+            }
+            else {
+                inflight.getAndDecrement
+            }
+        }
+
+        runNext()
+    }
+
+    /** {@inheritDoc} */
+    def apply(
+        request: Request, executor: => Future[Option[nElement]]
+    ): Future[Option[nElement]] = {
+
+        val result = Promise[Option[nElement]]()
+
+        // When this future is done, succesful or not, check to see if there
+        // is another request to execute
+        result.future.onComplete {
+            case _ => {
+                inflight.decrementAndGet
+                runNext()
+            }
+        }
+
+        queue.add(() => result.completeWith(executor))
+
+        runNext()
+
+        result.future
+    }
 }
 
 

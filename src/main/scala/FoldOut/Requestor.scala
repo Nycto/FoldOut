@@ -31,8 +31,7 @@ private[foldout] class Requestor (
 
     /** Alternate constructor that puts together an async client */
     def this (
-        url: UrlBuilder, auth: Option[Auth],
-        timeout: Int, maxConnections: Int,
+        url: UrlBuilder, auth: Option[Auth], timeout: Int,
         metrics: Metrics, intercept: Interceptor
     )( implicit context: ExecutionContext ) = this(
         new RequestBuilder( url, auth ),
@@ -42,7 +41,6 @@ private[foldout] class Requestor (
                 .setAllowPoolingConnections(true)
                 .setAllowPoolingSslConnections(true)
                 .setRequestTimeout( timeout )
-                .setMaxConnectionsPerHost( maxConnections )
                 .build()
         ),
         metrics,

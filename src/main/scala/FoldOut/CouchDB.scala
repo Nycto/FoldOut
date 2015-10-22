@@ -69,11 +69,12 @@ class CouchDB (
     /** The internal interface for making requests to CouchDB */
     private val requestor = new Requestor(
         new UrlBuilder( host, port, ssl ),
-        auth, timeout, maxConnections, metrics,
+        auth, timeout, metrics,
         Interceptor.create(
             logger,
             timeout.seconds,
-            CouchDB.scheduler
+            CouchDB.scheduler,
+            maxConnections
         )
     )
 
