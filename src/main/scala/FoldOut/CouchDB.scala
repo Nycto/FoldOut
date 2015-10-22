@@ -3,16 +3,12 @@ package com.roundeights.foldout
 import com.roundeights.scalon.nElement
 import scala.concurrent.{Future, ExecutionContext}
 import scala.concurrent.duration._
-import java.util.concurrent.Executors
 import org.slf4j._
 
 /**
  * CouchDB companion
  */
 object CouchDB {
-
-    /** A shared scheduler for all CouchDB instances */
-    private lazy val scheduler = Executors.newScheduledThreadPool(1)
 
     /** Constructs a new CouchDB connection pool */
     def apply (
@@ -70,12 +66,7 @@ class CouchDB (
     private val requestor = new Requestor(
         new UrlBuilder( host, port, ssl ),
         auth, timeout, metrics,
-        Interceptor.create(
-            logger,
-            timeout.seconds,
-            CouchDB.scheduler,
-            maxConnections
-        )
+        Interceptor.create( logger, timeout.seconds, maxConnections )
     )
 
     /** Sends a message to close the connection down */

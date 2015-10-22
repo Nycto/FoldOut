@@ -6,24 +6,25 @@ import scala.concurrent.duration.Duration
 import scala.annotation.tailrec
 import com.ning.http.client.Request
 import java.util.concurrent.atomic.AtomicInteger
-import java.util.concurrent.TimeoutException
-import java.util.concurrent.{ConcurrentLinkedQueue, ScheduledExecutorService}
+import java.util.concurrent._
 import org.slf4j.Logger
 
 /** @see Interceptor */
 private[foldout] object Interceptor {
 
+    /** A shared scheduler for all CouchDB instances */
+    private[foldout] lazy val scheduler = Executors.newScheduledThreadPool(1)
+
     /** Creates a new preconfigured interceptor */
     def create (
         logger: Logger,
         timeout: Duration,
-        scheduler: ScheduledExecutorService,
         maxConnections: Int
     )(
         implicit context: ExecutionContext
     ): Interceptor = {
         val log = new RequestLogger( logger )
-        val timer = new Timeout(timeout, scheduler)
+        val timer = new Timeout(timeout)
         val limiter = new RateLimiter(maxConnections)
 
         return new Interceptor {
@@ -47,8 +48,7 @@ private[foldout] trait Interceptor {
 
 /** Inflicts a timeout on the request */
 private[foldout] class Timeout (
-    private val timeout: Duration,
-    private val scheduler: ScheduledExecutorService
+    private val timeout: Duration
 )(
     implicit context: ExecutionContext
 ) extends Interceptor {
@@ -59,7 +59,7 @@ private[foldout] class Timeout (
     ): Future[Option[nElement]] = {
         val timer = Promise[Option[nElement]]()
 
-        scheduler.schedule(new Runnable {
+        Interceptor.scheduler.schedule(new Runnable {
             override def run(): Unit = timer.failure(
                 new TimeoutException("Request timed out")
             )
